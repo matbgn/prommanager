@@ -109,7 +109,10 @@ After=network-online.target
 User=node_exporter
 Group=node_exporter
 Type=simple
-ExecStart=/usr/local/bin/node_exporter --collector.systemd --collector.processes
+ExecStart=/usr/local/bin/node_exporter \
+  --collector.systemd \
+  --collector.processes \
+  --web.listen-address=:9500
 
 [Install]
 WantedBy=multi-user.target
@@ -157,12 +160,12 @@ scrape_configs:
   - job_name: 'prometheus'
     scrape_interval: 5s
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ['localhost:9590']
 
   - job_name: 'node_exporter'
     scrape_interval: 5s
     static_configs:
-      - targets: ['localhost:9100']
+      - targets: ['localhost:9500']
 EOM
 
 cat > /etc/systemd/system/prometheus.service <<EOM
@@ -179,7 +182,8 @@ cat > /etc/systemd/system/prometheus.service <<EOM
   --config.file /etc/prometheus/prometheus.yml \
   --storage.tsdb.path /var/lib/prometheus/ \
   --web.console.templates=/etc/prometheus/consoles \
-  --web.console.libraries=/etc/prometheus/console_libraries
+  --web.console.libraries=/etc/prometheus/console_libraries \
+  --web.listen-address=:9590
   ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
