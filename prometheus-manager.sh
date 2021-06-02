@@ -79,8 +79,9 @@ done
 useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
 useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
 
-(mkdir /etc/prometheus && mkdir /var/lib/prometheus) &> /dev/null
-ls /etc | grep prometheus | awk '{printf "\nDirectories %s exists:\n", $1}'
+mkdir /etc/prometheus &> /dev/null
+mkdir /var/lib/prometheus &> /dev/null
+ls /etc | grep prometheus | awk '{printf "\nDirectories %s:\n", $1}'
 chown prometheus:prometheus /etc/prometheus &> /dev/nul4l && ls -all /etc | grep prometheus
 chown prometheus:prometheus /var/lib/prometheus && ls -all /var/lib/ | grep prometheus
 
