@@ -2,13 +2,79 @@
 printf "Welcome to Prometheus manager!\n\n" # print to screen
 SYSTEM_ARCH=amd64 #arm64
 
-UPDATE_NODE_EXPORTER=false
-NODE_EXPORTER_VERSION=1.1.2
-INIT_NODE_EXPORTER=false
+function usage {
+        echo "Usage: $(basename "$0") [-uidnpk] [-N 1.1.2] [-P 2.27.1]" 2>&1
+        echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p'
+        echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p'
+        echo '   -d                         Update node_exporter and prometheus with default version 1.1.2/2.27.1'
+        echo '   -n                         Update node_exporter with default version'
+        echo '   -N NODE_EXPORTER_VERSION   Specify node_exporter version to be updated'
+        echo '   -p                         Update Prometheus with default version'
+        echo '   -P PROMETHEUS_VERSION      Specify prometheus version'
+        echo '   -k                         Stop systemctl for both prometheus and node_exporter'
+        exit 1
+}
 
-UPDATE_PROMETHEUS=false
+# Set default values
+NODE_EXPORTER_VERSION=1.1.2
 PROMETHEUS_VERSION=2.27.1
+
+UPDATE_NODE_EXPORTER=false
+UPDATE_PROMETHEUS=false
+
+INIT_NODE_EXPORTER=false
 INIT_PROMETHEUS=false
+
+NODE_TRIGGER=false
+PROMETHEUS_TRIGGER=false
+
+if [[ ${#} -eq 0 ]]; then
+   usage
+fi
+
+# Define list of arguments expected in the input
+# The following getopts command specifies that options N and P have arguments
+optstring=":uidnN:pP:k"
+
+while getopts ${optstring} arg; do
+  case "${arg}" in
+    u)
+      UPDATE_NODE_EXPORTER=true
+      UPDATE_PROMETHEUS=true
+      ;;
+    i)
+      INIT_NODE_EXPORTER=true
+      INIT_PROMETHEUS=true
+      ;;
+    d)
+      NODE_TRIGGER=true
+      PROMETHEUS_TRIGGER=true
+      ;;
+    n)
+      NODE_TRIGGER=true
+      ;;
+    N)
+      NODE_EXPORTER_VERSION="${OPTARG}"
+      NODE_TRIGGER=true
+      ;;
+    p)
+      PROMETHEUS_TRIGGER=true
+      ;;
+    P)
+      PROMETHEUS_VERSION="${OPTARG}"
+      PROMETHEUS_TRIGGER=true
+      ;;
+    k)
+      systemctl stop node_exporter
+      systemctl stop prometheus
+      ;;
+    ?)
+      echo "Invalid option: -${OPTARG}."
+      echo
+      usage
+      ;;
+  esac
+done
 
 useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
 useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
@@ -18,7 +84,7 @@ ls /etc | grep prometheus | awk '{printf "\nDirectories %s exists:\n", $1}'
 chown prometheus:prometheus /etc/prometheus &> /dev/nul4l && ls -all /etc | grep prometheus
 chown prometheus:prometheus /var/lib/prometheus && ls -all /var/lib/ | grep prometheus
 
-if $UPDATE_NODE_EXPORTER; then
+if $UPDATE_NODE_EXPORTER && $NODE_TRIGGER; then
   printf "\nUpdate node_exporter\n"
   test -f node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}.tar.gz || wget https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}.tar.gz
 
@@ -32,7 +98,7 @@ fi
 printf "\nVersion of node_exporter is:\n"
 /usr/local/bin/node_exporter --version
 
-if $INIT_NODE_EXPORTER; then
+if $INIT_NODE_EXPORTER && $NODE_TRIGGER; then
   cat > /etc/systemd/system/node_exporter.service <<EOM
 [Unit]
 Description=Node Exporter
@@ -56,7 +122,7 @@ fi
 
 systemctl status node_exporter | awk 'NR==3 {printf "\nStatus of node_exporter: %s\n", $2}'
 
-if $UPDATE_PROMETHEUS; then
+if $UPDATE_PROMETHEUS && $PROMETHEUS_TRIGGER; then
   printf "\nUpdate Prometheus\n"
   test -f prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}.tar.gz || wget https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}.tar.gz
 
@@ -77,7 +143,7 @@ fi
 /usr/local/bin/prometheus --version | awk 'NR==1 {printf "\nVersion of Prometheus is: %s\n", $3}'
 test -f /usr/local/bin/promtool && echo Promtool is present
 
-if $INIT_PROMETHEUS; then
+if $INIT_PROMETHEUS && $PROMETHEUS_TRIGGER; then
   cat > /etc/prometheus/prometheus.yml <<EOM
 global:
   scrape_interval:     15s
