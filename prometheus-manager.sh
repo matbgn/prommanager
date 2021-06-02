@@ -6,10 +6,10 @@ function usage {
         echo "Usage: $(basename "$0") [-uidnpk] [-N 1.1.2] [-P 2.27.1]" 2>&1
         echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p'
         echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p'
-        echo '   -d                         Update node_exporter and prometheus with default version 1.1.2/2.27.1'
-        echo '   -n                         Update node_exporter with default version'
+        echo '   -d                         Process node_exporter and prometheus with default version 1.1.2/2.27.1'
+        echo '   -n                         Process node_exporter with default version'
         echo '   -N NODE_EXPORTER_VERSION   Specify node_exporter version to be updated'
-        echo '   -p                         Update Prometheus with default version'
+        echo '   -p                         Process Prometheus with default version'
         echo '   -P PROMETHEUS_VERSION      Specify prometheus version'
         echo '   -k                         Stop systemctl for both prometheus and node_exporter'
         exit 1
