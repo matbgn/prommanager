@@ -3,7 +3,7 @@ printf "Welcome to Prometheus manager!\n\n" # print to screen
 SYSTEM_ARCH=amd64 #arm64
 
 function usage {
-        echo "Usage: $(basename "$0") [-uidnpk] [-N 1.1.2] [-P 2.27.1]" 2>&1
+        echo "Usage: $(basename "$0") [-uidnpks] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
         echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p'
         echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p'
         echo '   -d                         Process node_exporter and prometheus with default version 1.1.2/2.27.1'
@@ -12,6 +12,8 @@ function usage {
         echo '   -p                         Process Prometheus with default version'
         echo '   -P PROMETHEUS_VERSION      Specify prometheus version'
         echo '   -k                         Stop systemctl for both prometheus and node_exporter'
+        echo '   -s                         Prompt services status'
+        echo '   -r all                     Remove all data, users and services'
         exit 1
 }
 
@@ -34,7 +36,7 @@ fi
 
 # Define list of arguments expected in the input
 # The following getopts command specifies that options N and P have arguments
-optstring=":uidnN:pP:k"
+optstring=":uidnN:pP:ksr:"
 
 while getopts ${optstring} arg; do
   case "${arg}" in
@@ -67,6 +69,26 @@ while getopts ${optstring} arg; do
     k)
       systemctl stop node_exporter
       systemctl stop prometheus
+      exit 1
+      ;;
+    s)
+      systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
+      systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+      exit 1
+      ;;
+    r)
+      systemctl stop node_exporter
+      systemctl stop prometheus
+      rm /usr/local/bin/node_exporter
+      rm /etc/systemd/system/node_exporter.service
+      rm /usr/local/bin/prometheus
+      rm /usr/local/bin/promtool
+      rm -rf /etc/prometheus
+      rm /etc/systemd/system/prometheus.service
+      deluser --remove-home node_exporter
+      deluser --remove-home prometheus
+      systemctl daemon-reload
+      exit 1
       ;;
     ?)
       echo "Invalid option: -${OPTARG}."
