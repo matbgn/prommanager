@@ -84,6 +84,7 @@ while getopts ${optstring} arg; do
       rm /usr/local/bin/prometheus
       rm /usr/local/bin/promtool
       rm -rf /etc/prometheus
+      rm -rf /var/lib/prometheus/
       rm /etc/systemd/system/prometheus.service
       deluser --remove-home node_exporter
       deluser --remove-home prometheus
