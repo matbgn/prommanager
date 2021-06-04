@@ -91,9 +91,7 @@ while getopts ${optstring} arg; do
       exit 1
       ;;
     s)
-      get_versions
-      echo
-      systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
+      systemctl status node_exporter | awk 'NR==3 {printf "\nStatus of node_exporter: %s\n", $2}'
       systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
       exit 1
       ;;
