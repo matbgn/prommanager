@@ -36,7 +36,7 @@ if [[ ${#} -eq 0 ]]; then
 fi
 
 function get_versions() {
-  printf "Installation version for node_exporter will be: %s" "$NODE_EXPORTER_VERSION"
+  printf "\nInstallation version for node_exporter will be: %s" "$NODE_EXPORTER_VERSION"
 
   curl -s https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep "tag_name" |
   awk '{printf "\nHighest available version for node_exporter is: %s", substr($2, 3, length($2)-4)}'
@@ -91,7 +91,8 @@ while getopts ${optstring} arg; do
       exit 1
       ;;
     s)
-      systemctl status node_exporter | awk 'NR==3 {printf "\nStatus of node_exporter: %s\n", $2}'
+      echo
+      systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
       systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
       exit 1
       ;;
@@ -100,6 +101,7 @@ while getopts ${optstring} arg; do
       exit 1
       ;;
     r)
+      echo
       systemctl stop node_exporter
       systemctl stop prometheus
       rm /usr/local/bin/node_exporter
@@ -122,7 +124,7 @@ while getopts ${optstring} arg; do
   esac
 done
 
-
+echo
 useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
 useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
 
@@ -238,5 +240,3 @@ EOM
 fi
 
 systemctl status prometheus | awk 'NR==3 {printf "\nStatus of Prometheus: %s\n", $2}'
-
-get_versions
