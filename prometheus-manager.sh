@@ -1,5 +1,5 @@
 #!/bin/bash
-printf "Welcome to Prometheus manager!\n\n" # print to screen
+printf "Welcome to Prometheus manager!\n" # print to screen
 SYSTEM_ARCH=amd64 #arm64
 
 function usage {
