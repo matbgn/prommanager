@@ -3,7 +3,7 @@ printf "Welcome to Prometheus manager!\n\n" # print to screen
 SYSTEM_ARCH=amd64 #arm64
 
 function usage {
-        echo "Usage: $(basename "$0") [-uidnpks] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
+        echo "Usage: $(basename "$0") [-uidnpksv] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
         echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p'
         echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p'
         echo '   -d                         Process node_exporter and prometheus with default version 1.1.2/2.27.1'
@@ -13,6 +13,7 @@ function usage {
         echo '   -P PROMETHEUS_VERSION      Specify prometheus version'
         echo '   -k                         Stop systemctl for both prometheus and node_exporter'
         echo '   -s                         Prompt services status'
+        echo '   -v                         Get all possible versions'
         echo '   -r all                     Remove all data, users and services'
         exit 1
 }
@@ -34,9 +35,27 @@ if [[ ${#} -eq 0 ]]; then
    usage
 fi
 
+function get_versions() {
+  printf "Installation version for node_exporter will be: %s" "$NODE_EXPORTER_VERSION"
+
+  curl -s https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep "tag_name" |
+  awk '{printf "\nHighest available version for node_exporter is: %s", substr($2, 3, length($2)-4)}'
+
+  printf "\nActual version of node_exporter is:\n"
+  /usr/local/bin/node_exporter --version
+
+  printf "\nInstallation version for Prometheus will be: %s" "$PROMETHEUS_VERSION"
+
+  curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest | grep "tag_name" |
+  awk '{printf "\nHighest available version for Prometheus is: %s\n", substr($2, 3, length($2)-4)}'
+
+  /usr/local/bin/prometheus --version | awk 'NR==1 {printf "Actual version of Prometheus is: %s\n", $3}'
+  test -f /usr/local/bin/promtool && echo Promtool is present
+}
+
 # Define list of arguments expected in the input
 # The following getopts command specifies that options N and P have arguments
-optstring=":uidnN:pP:ksr:"
+optstring=":uidnN:pP:ksvr:"
 
 while getopts ${optstring} arg; do
   case "${arg}" in
@@ -72,8 +91,14 @@ while getopts ${optstring} arg; do
       exit 1
       ;;
     s)
+      get_versions
+      echo
       systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
       systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+      exit 1
+      ;;
+    v)
+      get_versions
       exit 1
       ;;
     r)
@@ -99,6 +124,7 @@ while getopts ${optstring} arg; do
   esac
 done
 
+
 useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
 useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
 
@@ -118,9 +144,6 @@ if $UPDATE_NODE_EXPORTER && $NODE_TRIGGER; then
 
   rm -rf node_exporter-${NODE_EXPORTER_VERSION}*
 fi
-
-printf "\nVersion of node_exporter is:\n"
-/usr/local/bin/node_exporter --version
 
 if $INIT_NODE_EXPORTER && $NODE_TRIGGER; then
   cat > /etc/systemd/system/node_exporter.service <<EOM
@@ -166,9 +189,6 @@ if $UPDATE_PROMETHEUS && $PROMETHEUS_TRIGGER; then
 
   rm -rf prometheus-${PROMETHEUS_VERSION}*
 fi
-
-/usr/local/bin/prometheus --version | awk 'NR==1 {printf "\nVersion of Prometheus is: %s\n", $3}'
-test -f /usr/local/bin/promtool && echo Promtool is present
 
 if $INIT_PROMETHEUS && $PROMETHEUS_TRIGGER; then
   cat > /etc/prometheus/prometheus.yml <<EOM
@@ -220,3 +240,5 @@ EOM
 fi
 
 systemctl status prometheus | awk 'NR==3 {printf "\nStatus of Prometheus: %s\n", $2}'
+
+get_versions
