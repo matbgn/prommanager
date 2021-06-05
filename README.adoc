@@ -1,0 +1,22 @@
+= Prometheus Manager
+:icons: font
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Description
+Manager to install, update, init Prometheus and node_exporter.
+
+== Usage
+Get helper by running this command:
+
+    sudo ./prometheus-manager.sh -h
+
+== Pull latest release versions
+Get info with:
+
+    sudo ./prometheus-manager.sh -v
