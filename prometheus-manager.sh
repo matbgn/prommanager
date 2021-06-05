@@ -5,9 +5,9 @@ printf "Welcome to Prometheus manager!\n\n" # print to screen
 function usage {
         echo "Usage: $(basename "$0") [-uibnpksv] [-a arm64] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
         echo '   -a arm64                   Set architecture, default is amd64'
-        echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p'
-        echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p'
-        echo '   -b                         Process both node_exporter and prometheus with default version 1.1.2/2.27.1'
+        echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p/-b'
+        echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p/-b'
+        echo '   -b                         Process both node_exporter and prometheus with default script version'
         echo '   -n                         Process node_exporter with default script version'
         echo '   -N 1.1.2                   Specify node_exporter version'
         echo '   -p                         Process Prometheus with default script version'
