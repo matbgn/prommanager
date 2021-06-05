@@ -20,3 +20,11 @@ Get helper by running this command:
 Get info with:
 
     sudo ./prometheus-manager.sh -v
+
+Then specify which version you will install by:
+
+    sudo ./prometheus-manager.sh -u -N 1.1.2 -P 2.2.7
+
+or let the default versions for both (hard coded in script) do the job:
+
+    sudo ./prometheus-manager.sh -unp

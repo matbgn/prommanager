@@ -3,10 +3,10 @@ printf "Welcome to Prometheus manager!\n\n" # print to screen
 SYSTEM_ARCH=amd64 #arm64
 
 function usage {
-        echo "Usage: $(basename "$0") [-uidnpksv] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
+        echo "Usage: $(basename "$0") [-uibnpksv] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
         echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p'
         echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p'
-        echo '   -d                         Process node_exporter and prometheus with default version 1.1.2/2.27.1'
+        echo '   -b                         Process both node_exporter and prometheus with default version 1.1.2/2.27.1'
         echo '   -n                         Process node_exporter with default version'
         echo '   -N NODE_EXPORTER_VERSION   Specify node_exporter version to be updated'
         echo '   -p                         Process Prometheus with default version'
@@ -20,7 +20,7 @@ function usage {
 
 # Define list of arguments expected in the input
 # The following getopts command specifies that options N and P have arguments
-OPTSTRING=":uidnN:pP:ksvr:"
+OPTSTRING=":uibnN:pP:ksvr:"
 
 if [[ ${#} -eq 0 ]]; then
    usage
@@ -59,12 +59,14 @@ function get_versions() {
 
   /usr/local/bin/prometheus --version | awk 'NR==1 {printf "Actual version of Prometheus is: %s\n", $3}'
   test -f /usr/local/bin/promtool && echo Promtool is present
+  echo
 }
 
 
 function get_status() {
   systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
   systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+  echo
 }
 
 
@@ -194,15 +196,7 @@ EOM
 
 while getopts ${OPTSTRING} arg; do
   case "${arg}" in
-    u)
-      UPDATE_NODE_EXPORTER=true
-      UPDATE_PROMETHEUS=true
-      ;;
-    i)
-      INIT_NODE_EXPORTER=true
-      INIT_PROMETHEUS=true
-      ;;
-    d)
+    b)
       NODE_TRIGGER=true
       PROMETHEUS_TRIGGER=true
       ;;
@@ -220,18 +214,24 @@ while getopts ${OPTSTRING} arg; do
       PROMETHEUS_VERSION="${OPTARG}"
       PROMETHEUS_TRIGGER=true
       ;;
+    u)
+      UPDATE_NODE_EXPORTER=true
+      UPDATE_PROMETHEUS=true
+      ;;
+    i)
+      INIT_NODE_EXPORTER=true
+      INIT_PROMETHEUS=true
+      ;;
+    v)
+      get_versions
+      ;;
+    s)
+      get_status
+      ;;
     k)
       systemctl stop node_exporter
       systemctl stop prometheus
       get_status
-      exit 1
-      ;;
-    s)
-      get_status
-      exit 1
-      ;;
-    v)
-      get_versions
       exit 1
       ;;
     r)
@@ -257,25 +257,28 @@ while getopts ${OPTSTRING} arg; do
   esac
 done
 
-
-set_users
+# Initial jobs to ensure script working smoothly
+# shellcheck disable=SC2199
+if [[ ${@} == *u* || ${@} == *i* ]]; then
+  set_users
+  set_prometheus_folders
+fi
 
 if $UPDATE_NODE_EXPORTER && $NODE_TRIGGER; then
   update_node_exporter
+fi
+if $UPDATE_PROMETHEUS && $PROMETHEUS_TRIGGER; then
+  update_prometheus
 fi
 
 if $INIT_NODE_EXPORTER && $NODE_TRIGGER; then
   init_node_exporter
 fi
-
-set_prometheus_folders
-
-if $UPDATE_PROMETHEUS && $PROMETHEUS_TRIGGER; then
-  update_prometheus
-fi
-
 if $INIT_PROMETHEUS && $PROMETHEUS_TRIGGER; then
   init_prometheus
 fi
 
-get_status
+# shellcheck disable=SC2199
+if [[ ${@} == *u* || ${@} == *i* ]]; then
+  get_status
+fi
