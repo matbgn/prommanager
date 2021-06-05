@@ -1,16 +1,17 @@
 #!/bin/bash
 printf "Welcome to Prometheus manager!\n\n" # print to screen
-SYSTEM_ARCH=amd64 #arm64
+
 
 function usage {
-        echo "Usage: $(basename "$0") [-uibnpksv] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
+        echo "Usage: $(basename "$0") [-uibnpksv] [-a arm64] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
+        echo '   -a arm64                   Set architecture, default is amd64'
         echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p'
         echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p'
         echo '   -b                         Process both node_exporter and prometheus with default version 1.1.2/2.27.1'
-        echo '   -n                         Process node_exporter with default version'
-        echo '   -N NODE_EXPORTER_VERSION   Specify node_exporter version to be updated'
-        echo '   -p                         Process Prometheus with default version'
-        echo '   -P PROMETHEUS_VERSION      Specify prometheus version'
+        echo '   -n                         Process node_exporter with default script version'
+        echo '   -N 1.1.2                   Specify node_exporter version'
+        echo '   -p                         Process Prometheus with default script version'
+        echo '   -P 2.2.7                   Specify prometheus version'
         echo '   -k                         Stop systemctl for both prometheus and node_exporter'
         echo '   -s                         Prompt services status'
         echo '   -v                         Get all possible versions'
@@ -20,13 +21,15 @@ function usage {
 
 # Define list of arguments expected in the input
 # The following getopts command specifies that options N and P have arguments
-OPTSTRING=":uibnN:pP:ksvr:"
+OPTSTRING=":a:uibnN:pP:ksvr:"
 
 if [[ ${#} -eq 0 ]]; then
    usage
 fi
 
 # Set default values
+SYSTEM_ARCH=amd64 #arm64
+
 NODE_EXPORTER_VERSION=1.1.2
 PROMETHEUS_VERSION=2.27.1
 
@@ -196,6 +199,9 @@ EOM
 
 while getopts ${OPTSTRING} arg; do
   case "${arg}" in
+    a)
+      SYSTEM_ARCH="${OPTARG}"
+      ;;
     b)
       NODE_TRIGGER=true
       PROMETHEUS_TRIGGER=true

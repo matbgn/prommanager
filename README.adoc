@@ -16,6 +16,11 @@ Get helper by running this command:
 
     sudo ./prometheus-manager.sh -h
 
+== OS Architecture
+Specify which one you want with (default is amd64):
+
+    sudo ./prometheus-manager.sh -a arm64
+
 == Pull latest release versions
 Get info with:
 
@@ -25,6 +30,14 @@ Then specify which version you will install by:
 
     sudo ./prometheus-manager.sh -u -N 1.1.2 -P 2.2.7
 
-or let the default versions for both (hard coded in script) do the job:
+Or let the default versions for both (hard coded in script) do the job:
 
     sudo ./prometheus-manager.sh -unp
+
+Equivalent to:
+
+    sudo ./prometheus-manager.sh -ub
+
+== Get actual services status
+
+    sudo ./prometheus-manager.sh -s
