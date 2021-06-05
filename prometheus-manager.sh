@@ -1,6 +1,24 @@
 #!/bin/bash
 printf "Welcome to Prometheus manager!\n\n" # print to screen
 
+# Set default values
+SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
+
+NODE_EXPORTER_VERSION=1.1.2 # -> can be changed by script argument -N 1.1.2
+PROMETHEUS_VERSION=2.27.1 # -> can be changed by script argument -P 2.27.1
+
+NODE_EXPORTER_PORT=9500
+PROMETHEUS_PORT=9590
+
+UPDATE_NODE_EXPORTER=false # -> can be changed by script argument -u
+UPDATE_PROMETHEUS=false # -> can be changed by script argument -u
+
+INIT_NODE_EXPORTER=false # -> can be changed by script argument -i
+INIT_PROMETHEUS=false # -> can be changed by script argument -i
+
+NODE_TRIGGER=false # -> can be changed either by script argument -n or -N 1.1.2 or -b
+PROMETHEUS_TRIGGER=false # -> can be changed either by script argument -p or -P 2.27.1 or -b
+
 
 function usage {
         echo "Usage: $(basename "$0") [-uibnpksv] [-a arm64] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
@@ -11,7 +29,7 @@ function usage {
         echo '   -n                         Process node_exporter with default script version'
         echo '   -N 1.1.2                   Specify node_exporter version'
         echo '   -p                         Process Prometheus with default script version'
-        echo '   -P 2.2.7                   Specify prometheus version'
+        echo '   -P 2.27.1                  Specify prometheus version'
         echo '   -k                         Stop systemctl for both prometheus and node_exporter'
         echo '   -s                         Prompt services status'
         echo '   -v                         Get all possible versions'
@@ -26,24 +44,6 @@ OPTSTRING=":a:uibnN:pP:ksvr:"
 if [[ ${#} -eq 0 ]]; then
    usage
 fi
-
-# Set default values
-SYSTEM_ARCH=amd64 #arm64
-
-NODE_EXPORTER_VERSION=1.1.2
-PROMETHEUS_VERSION=2.27.1
-
-NODE_EXPORTER_PORT=9500
-PROMETHEUS_PORT=9590
-
-UPDATE_NODE_EXPORTER=false
-UPDATE_PROMETHEUS=false
-
-INIT_NODE_EXPORTER=false
-INIT_PROMETHEUS=false
-
-NODE_TRIGGER=false
-PROMETHEUS_TRIGGER=false
 
 
 function get_versions() {
@@ -174,6 +174,7 @@ cat > /etc/systemd/system/prometheus.service <<EOM
   Description=Prometheus Monitoring
   Wants=network-online.target
   After=network-online.target
+
 
 [Service]
   User=prometheus
