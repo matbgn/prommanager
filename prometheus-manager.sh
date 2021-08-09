@@ -71,7 +71,7 @@ function get_status() {
 
   if systemctl status node_exporter | grep 'failed' > /dev/null
   then
-    printf "\n Status of node_exporter: \n"
+    printf "\nStatus of node_exporter: \n"
     systemctl status node_exporter &
     disown
     sleep 0.5
@@ -85,7 +85,7 @@ function get_status() {
 
   if systemctl status prometheus | grep 'failed' > /dev/null
   then
-    printf "\n Status of Prometheus: \n"
+    printf "\nStatus of Prometheus: \n"
     systemctl status prometheus &
     disown
     sleep 0.5
