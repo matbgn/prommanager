@@ -69,8 +69,26 @@ function get_versions() {
 
 function get_status() {
   systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
-  systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+  if (systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}') == 'failed'
+  then
+    echo "Prometheus failed"
+  else
+    systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+  fi
   echo
+}
+
+function list_used_ports() {
+  if ! command -v netstat &> /dev/null
+  then
+    echo "Netstat could not be found, install it first!"
+    echo
+    exit
+  else
+    printf "Actual ports used on this machine:\n"
+    netstat -plnt
+    echo
+  fi
 }
 
 
@@ -196,19 +214,6 @@ EOM
   systemctl daemon-reload
   systemctl enable prometheus
   systemctl start prometheus
-}
-
-function list_used_ports() {
-  if ! command -v netstat &> /dev/null
-  then
-    echo "Netstat could not be found, install it first!"
-    echo
-    exit
-  else
-    printf "Actual ports used on this machine:\n"
-    netstat -plnt
-    echo
-  fi
 }
 
 
