@@ -25,6 +25,7 @@ function usage {
         echo '   -a arm64                   Set architecture, default is amd64'
         echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p/-b'
         echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p/-b'
+        echo '   -l                         List all ports used'
         echo '   -b                         Process both node_exporter and prometheus with default script version'
         echo '   -n                         Process node_exporter with default script version'
         echo '   -N 1.1.2                   Specify node_exporter version'
@@ -197,6 +198,19 @@ EOM
   systemctl start prometheus
 }
 
+function list_used_ports() {
+  if ! command -v netstat &> /dev/null
+  then
+    echo "Netstat could not be found, install it first!"
+    echo
+    exit
+  else
+    printf "Actual ports used on this machine:\n"
+    netstat -plnt
+    echo
+  fi
+}
+
 
 while getopts ${OPTSTRING} arg; do
   case "${arg}" in
@@ -228,6 +242,9 @@ while getopts ${OPTSTRING} arg; do
     i)
       INIT_NODE_EXPORTER=true
       INIT_PROMETHEUS=true
+      ;;
+    l)
+      list_used_ports
       ;;
     v)
       get_versions
