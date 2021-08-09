@@ -68,10 +68,25 @@ function get_versions() {
 
 
 function get_status() {
-  systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
-  if (systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}') == 'failed'
+
+  if systemctl status node_exporter | grep 'failed' > /dev/null
   then
-    echo "Prometheus failed"
+    printf "\n Status of node_exporter: \n"
+    systemctl status node_exporter &
+    sleep 1
+    print "" > /dev/console
+  else
+    systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
+  fi
+  echo
+
+
+  if systemctl status prometheus | grep 'failed' > /dev/null
+  then
+    printf "\n Status of Prometheus: \n"
+    systemctl status prometheus &
+    sleep 1
+    print "" > /dev/console
   else
     systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
   fi
