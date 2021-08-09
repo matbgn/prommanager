@@ -73,8 +73,10 @@ function get_status() {
   then
     printf "\n Status of node_exporter: \n"
     systemctl status node_exporter &
-    sleep 1
-    print "" > /dev/console
+    disown
+    sleep 0.5
+    kill "$!"
+    stty sane
   else
     systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
   fi
@@ -85,8 +87,10 @@ function get_status() {
   then
     printf "\n Status of Prometheus: \n"
     systemctl status prometheus &
-    sleep 1
-    print "" > /dev/console
+    disown
+    sleep 0.5
+    kill "$!"
+    stty sane
   else
     systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
   fi
@@ -156,7 +160,7 @@ function set_prometheus_folders() {
   mkdir /etc/prometheus &> /dev/null
   mkdir /var/lib/prometheus &> /dev/null
   ls /etc | grep prometheus | awk '{printf "Directories %s:\n", $1}'
-  chown prometheus:prometheus /etc/prometheus &> /dev/nul4l && ls -all /etc | grep prometheus
+  chown prometheus:prometheus /etc/prometheus &> /dev/null && ls -all /etc | grep prometheus
   chown prometheus:prometheus /var/lib/prometheus && ls -all /var/lib/ | grep prometheus
   echo
 }
