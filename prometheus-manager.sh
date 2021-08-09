@@ -21,7 +21,7 @@ PROMETHEUS_TRIGGER=false # -> can be changed either by script argument -p or -P 
 
 
 function usage {
-        echo "Usage: $(basename "$0") [-uibnpksv] [-a arm64] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
+        echo "Usage: $(basename "$0") [-uilbnpksv] [-a arm64] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
         echo '   -a arm64                   Set architecture, default is amd64'
         echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p/-b'
         echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p/-b'
@@ -40,7 +40,7 @@ function usage {
 
 # Define list of arguments expected in the input
 # The following getopts command specifies that options N and P have arguments
-OPTSTRING=":a:uibnN:pP:ksvr:"
+OPTSTRING=":a:uilbnN:pP:ksvr:"
 
 if [[ ${#} -eq 0 ]]; then
    usage
