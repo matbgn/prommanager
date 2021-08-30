@@ -14,7 +14,7 @@ Manager to install, update, init Prometheus and node_exporter.
 == Installation
     wget https://raw.githubusercontent.com/matbgn/prometheus-manager/master/prometheus-manager.sh
     chmod +x prometheus-manager.sh
-    ./prometheus-manager.sh
+    ./prometheus-manager.sh -sv
 
 == Usage
 Get helper by running this command:
