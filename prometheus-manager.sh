@@ -100,7 +100,7 @@ function get_status() {
 function list_used_ports() {
   if ! command -v netstat &> /dev/null
   then
-    echo "Netstat could not be found, install it first!"
+    echo "Netstat could not be found, install it first (via net-tools package)!"
     echo
     exit
   else
