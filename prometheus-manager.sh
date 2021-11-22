@@ -4,8 +4,8 @@ printf "Welcome to Prometheus manager!\n\n" # print to screen
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
 
-NODE_EXPORTER_VERSION=1.2.2 # -> can be changed by script argument -N 1.1.2
-PROMETHEUS_VERSION=2.30.3 # -> can be changed by script argument -P 2.27.1
+NODE_EXPORTER_VERSION=1.3.0 # -> can be changed by script argument -N 1.1.2
+PROMETHEUS_VERSION=2.31.1 # -> can be changed by script argument -P 2.27.1
 
 NODE_EXPORTER_PORT=9500
 PROMETHEUS_PORT=9590
