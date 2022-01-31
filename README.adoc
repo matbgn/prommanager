@@ -48,3 +48,70 @@ Equivalent to:
 == Get actual services status
 
     sudo ./prometheus-manager.sh -s
+    
+== Upgrading OpenSSL and curl on Debian 6/7 or Ubuntu 8
+First install dev dependencies
+
+    sudo apt-get install libz-dev build-essential
+ 
+Then get OpenSSL sources via https://www.openssl.org/source/ 
+and Curl sources via https://curl.se/download.html 
+possibly use a bridge FTP server like this (if you are not able at all to wget it due to tls v1.0 certificate)
+
+    ftp -n -v ftp.xyz.domain << ENDFTP
+    user USERNAME PASSWORD
+    get openssl-1.1.1m.tar.gz
+    get curl-7.81.0.tar.gz
+    bye
+    ENDFTP
+    
+=== Build OpenSSL from source
+
+    tar -xzf openssl-1.1.1m.tar.gz
+    cd openssl-1.1.1m
+    ./config --prefix=/usr zlib-dynamic --openssldir=/etc/ssl shared
+    make
+    sudo make install
+    
+=== Build Curl from source
+
+    tar -xzf curl-7.81.0.tar.gz
+    cd curl-7.81.0
+    ./configure --disable-shared --with-openssl
+    make
+    sudo make install
+    ln -s /usr/local/bin/curl /usr/bin/curl
+    
+=== Check your versions and functionnality
+    
+    openssl version
+    curl --version
+    curl -v -s --tlsv1 https://www.ssllabs.com/ssltest 1>/dev/null
+    
+Last line should display something like
+
+```
+*   Trying 64.41.200.100:443...
+* Connected to www.ssllabs.com (64.41.200.100) port 443 (#0)
+* ALPN, offering http/1.1
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: none
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [122 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [25 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [3239 bytes data]
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+{ [264 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [36 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [36 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_128_GCM_SHA256
+```
