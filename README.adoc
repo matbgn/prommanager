@@ -49,7 +49,7 @@ Equivalent to:
 
     sudo ./prometheus-manager.sh -s
     
-== Upgrading OpenSSL and curl on Debian 6/7 or Ubuntu 8
+== Upgrading OpenSSL, Curl and wget on Debian 6/7 or Ubuntu 8
 First install dev dependencies
 
     sudo apt-get install libz-dev build-essential
@@ -75,16 +75,29 @@ possibly use a bridge FTP server like this (if you are not able at all to wget i
     
 === Build Curl from source
 
+    sudo apt-get remove curl
     tar -xzf curl-7.81.0.tar.gz
     cd curl-7.81.0
     ./configure --disable-shared --with-openssl
     make
     sudo make install
     ln -s /usr/local/bin/curl /usr/bin/curl
+
+=== Upgrade wget with curl already upgraded
+
+    sudo apt-get remove wget
+    curl -O  http://ftp.gnu.org/gnu/wget/wget-1.21.tar.gz
+    tar -xzf wget-1.21.tar.gz
+    cd wget-1.21
+    CFLAGS=-std=gnu99 ./configure --with-ssl=openssl --with-libssl-prefix=/usr/bin/openssl
+    make
+    sudo make install
+    ln -s /usr/local/bin/wget /usr/bin/wget
     
 === Check your versions and functionnality
     
     openssl version
+    wget -V
     curl --version
     curl -v -s --tlsv1 https://www.ssllabs.com/ssltest 1>/dev/null
     
