@@ -176,7 +176,7 @@ EOM
     if [ $? -ne 0 ]
     then
       printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
-      printf "$ pleaserun --user node_exporter --group node_exporter --install /usr/local/bin/node_exporter --collector.processes --web.listen-address=:9500\n\n"
+      printf "$ pleaserun --user node_exporter --group node_exporter --install /usr/local/bin/node_exporter --collector.processes --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
     fi
   fi
 }
@@ -268,7 +268,7 @@ EOM
     if [ $? -ne 0 ]
     then
       printf "You have to install and start prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
-      printf "$ pleaserun --user prometheus --group prometheus --install /usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --web.console.templates=/etc/prometheus/consoles --web.console.libraries=/etc/prometheus/console_libraries --web.listen-address=:9590\n\n"
+      printf "$ pleaserun --user prometheus --group prometheus --install /usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --web.console.templates=/etc/prometheus/consoles --web.console.libraries=/etc/prometheus/console_libraries --web.listen-address=:%s\n\n" "$PROMETHEUS_PORT"
     fi
   fi
 }
@@ -324,6 +324,7 @@ while getopts ${OPTSTRING} arg; do
         service node_exporter stop
         service prometheus stop
       fi
+      echo
       get_status
       exit 1
       ;;
