@@ -102,32 +102,8 @@ function get_status() {
 
   else
 
-    if service node_exporter status | grep 'failed' > /dev/null
-    then
-      printf "\nStatus of node_exporter: \n"
-      service node_exporter status &
-      disown
-      sleep 0.5
-      kill "$!"
-      stty sane
-    else
-      service node_exporter status | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
-    fi
-    echo
-
-
-    if service prometheus status | grep 'failed' > /dev/null
-    then
-      printf "\nStatus of Prometheus: \n"
-      service prometheus status &
-      disown
-      sleep 0.5
-      kill "$!"
-      stty sane
-    else
-      service prometheus status | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
-    fi
-    echo
+    service node_exporter status | awk 'NR==1 {printf "Status of node_exporter: %s\n", $0}'
+    service prometheus status | awk 'NR==1 {printf "Status of Prometheus: %s\n", $0}'
 
   fi
 }
