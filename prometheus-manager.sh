@@ -1,5 +1,5 @@
 #!/bin/bash
-printf "Welcome to Prometheus manager v0.2.0!\n\n" # print to screen
+printf "Welcome to Prometheus manager v0.3.0!\n\n" # print to screen
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -103,7 +103,9 @@ function get_status() {
   else
 
     service node_exporter status | awk 'NR==1 {printf "Status of node_exporter: %s\n", $0}'
+    echo
     service prometheus status | awk 'NR==1 {printf "Status of Prometheus: %s\n", $0}'
+    echo
 
   fi
 }
@@ -170,7 +172,8 @@ EOM
     systemctl enable node_exporter
     systemctl start node_exporter
   else
-    printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n\n$ pleaserun --install /usr/local/bin/node_exporter"
+    printf "You have to install and start node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
+    printf "$ pleaserun --user node_exporter --group node_exporter --install /usr/local/bin/node_exporter --collector.processes --web.listen-address=:9500\n\n"
   fi
 }
 
@@ -257,7 +260,8 @@ EOM
     systemctl enable prometheus
     systemctl start prometheus
   else
-    printf "You have to install prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n\n$ pleaserun --install /usr/local/bin/prometheus"
+    printf "You have to install and start prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
+    printf "$ pleaserun --user prometheus --group prometheus --install /usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --web.console.templates=/etc/prometheus/consoles --web.console.libraries=/etc/prometheus/console_libraries --web.listen-address=:9590\n\n"
   fi
 }
 
