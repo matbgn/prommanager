@@ -116,7 +116,7 @@ function get_status() {
     echo
 
 
-    if service node_exporter status | grep 'failed' > /dev/null
+    if service prometheus status | grep 'failed' > /dev/null
     then
       printf "\nStatus of Prometheus: \n"
       service prometheus status &
