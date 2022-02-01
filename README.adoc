@@ -93,6 +93,23 @@ possibly use a bridge FTP server like this (if you are not able at all to wget i
     make
     sudo make install
     ln -s /usr/local/bin/wget /usr/bin/wget
+
+=== WARNING: Don't forget to update ca-certificates locally
+
+    update-ca-certificates --fresh
+
+In case of missing ones like this
+
+    ERROR: cannot verify cache.ruby-lang.org's certificate, issued by ‘CN=GlobalSign Atlas R3 DV TLS CA H2 2021,O=GlobalSign nv-sa,C=BE’:
+    Unable to locally verify the issuer's authority.
+    To connect to cache.ruby-lang.org insecurely, use `--no-check-certificate'.
+
+Download corresponding certificate, add it to `/etc/ssl/certs` and update ca-certificates
+
+    wget https://raw.githubusercontent.com/rubygems/rubygems/master/lib/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA_R3.pem
+    cp GlobalSignRootCA_R3.pem /etc/ssl/certs/
+    update-ca-certificates --fresh
+
     
 === Check your versions and functionnality
     

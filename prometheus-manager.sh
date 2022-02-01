@@ -31,7 +31,7 @@ function usage {
         echo '   -N 1.1.2                   Specify node_exporter version'
         echo '   -p                         Process Prometheus with default script version'
         echo '   -P 2.27.1                  Specify prometheus version'
-        echo '   -k                         Stop systemctl for both prometheus and node_exporter'
+        echo '   -k                         Stop daemons for both prometheus and node_exporter'
         echo '   -s                         Prompt services status'
         echo '   -v                         Get all possible versions'
         echo '   -r all                     Remove all data, users and services'
@@ -69,32 +69,67 @@ function get_versions() {
 
 function get_status() {
 
-  if systemctl status node_exporter | grep 'failed' > /dev/null
+  systemctl 2>/dev/null
+  if [ $? -eq 0 ]
   then
-    printf "\nStatus of node_exporter: \n"
-    systemctl status node_exporter &
-    disown
-    sleep 0.5
-    kill "$!"
-    stty sane
-  else
-    systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
-  fi
-  echo
+
+    if systemctl status node_exporter | grep 'failed' > /dev/null
+    then
+      printf "\nStatus of node_exporter: \n"
+      systemctl status node_exporter &
+      disown
+      sleep 0.5
+      kill "$!"
+      stty sane
+    else
+      systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
+    fi
+    echo
 
 
-  if systemctl status prometheus | grep 'failed' > /dev/null
-  then
-    printf "\nStatus of Prometheus: \n"
-    systemctl status prometheus &
-    disown
-    sleep 0.5
-    kill "$!"
-    stty sane
+    if systemctl status prometheus | grep 'failed' > /dev/null
+    then
+      printf "\nStatus of Prometheus: \n"
+      systemctl status prometheus &
+      disown
+      sleep 0.5
+      kill "$!"
+      stty sane
+    else
+      systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+    fi
+    echo
+
   else
-    systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+
+    if service node_exporter status | grep 'failed' > /dev/null
+    then
+      printf "\nStatus of node_exporter: \n"
+      service node_exporter status &
+      disown
+      sleep 0.5
+      kill "$!"
+      stty sane
+    else
+      service node_exporter status | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
+    fi
+    echo
+
+
+    if service node_exporter status | grep 'failed' > /dev/null
+    then
+      printf "\nStatus of Prometheus: \n"
+      service prometheus status &
+      disown
+      sleep 0.5
+      kill "$!"
+      stty sane
+    else
+      service prometheus status | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+    fi
+    echo
+
   fi
-  echo
 }
 
 function list_used_ports() {
@@ -131,7 +166,11 @@ function update_node_exporter() {
 
 
 function init_node_exporter() {
-  cat > /etc/systemd/system/node_exporter.service <<EOM
+  systemctl 2>/dev/null
+  if [ $? -eq 0 ]
+  then
+
+    cat > /etc/systemd/system/node_exporter.service <<EOM
 [Unit]
 Description=Node Exporter
 Wants=network-online.target
@@ -150,9 +189,13 @@ ExecStart=/usr/local/bin/node_exporter \
 WantedBy=multi-user.target
 EOM
 
-  systemctl daemon-reload
-  systemctl enable node_exporter
-  systemctl start node_exporter
+
+    systemctl daemon-reload
+    systemctl enable node_exporter
+    systemctl start node_exporter
+  else
+    printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun"
+  fi
 }
 
 
@@ -207,7 +250,11 @@ scrape_configs:
       - targets: ['localhost:${NODE_EXPORTER_PORT}']
 EOM
 
-cat > /etc/systemd/system/prometheus.service <<EOM
+  systemctl 2>/dev/null
+  if [ $? -eq 0 ]
+  then
+
+    cat > /etc/systemd/system/prometheus.service <<EOM
 [Unit]
   Description=Prometheus Monitoring
   Wants=network-online.target
@@ -230,9 +277,12 @@ cat > /etc/systemd/system/prometheus.service <<EOM
   WantedBy=multi-user.target
 EOM
 
-  systemctl daemon-reload
-  systemctl enable prometheus
-  systemctl start prometheus
+    systemctl daemon-reload
+    systemctl enable prometheus
+    systemctl start prometheus
+  else
+    printf "You have to install prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun"
+  fi
 }
 
 
@@ -277,24 +327,47 @@ while getopts ${OPTSTRING} arg; do
       get_status
       ;;
     k)
-      systemctl stop node_exporter
-      systemctl stop prometheus
+      systemctl 2>/dev/null
+      if [ $? -eq 0 ]
+      then
+        systemctl stop node_exporter
+        systemctl stop prometheus
+      else
+        service node_exporter stop
+        service prometheus stop
+      fi
       get_status
       exit 1
       ;;
     r)
-      systemctl stop node_exporter
-      systemctl stop prometheus
+      systemctl 2>/dev/null
+      if [ $? -eq 0 ]
+      then
+        systemctl stop node_exporter
+        systemctl stop prometheus
+      else
+        service node_exporter stop
+        service prometheus stop
+      fi
       rm /usr/local/bin/node_exporter
-      rm /etc/systemd/system/node_exporter.service
       rm /usr/local/bin/prometheus
       rm /usr/local/bin/promtool
       rm -rf /etc/prometheus
       rm -rf /var/lib/prometheus/
-      rm /etc/systemd/system/prometheus.service
+
       deluser --remove-home node_exporter
       deluser --remove-home prometheus
-      systemctl daemon-reload
+
+      systemctl 2>/dev/null
+      if [ $? -eq 0 ]
+      then
+        rm /etc/systemd/system/node_exporter.service
+        rm /etc/systemd/system/prometheus.service
+        systemctl daemon-reload
+      else
+        printf "You have to remove daemons node_exporter & prometheus manually!"
+      fi
+
       exit 1
       ;;
     ?)
