@@ -1,5 +1,5 @@
 #!/bin/bash
-printf "Welcome to Prometheus manager v0.1.1!\n\n" # print to screen
+printf "Welcome to Prometheus manager v0.2.0!\n\n" # print to screen
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -194,7 +194,7 @@ EOM
     systemctl enable node_exporter
     systemctl start node_exporter
   else
-    printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun"
+    printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n\n$ pleaserun --install /usr/local/bin/node_exporter"
   fi
 }
 
@@ -281,7 +281,7 @@ EOM
     systemctl enable prometheus
     systemctl start prometheus
   else
-    printf "You have to install prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun"
+    printf "You have to install prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n\n$ pleaserun --install /usr/local/bin/prometheus"
   fi
 }
 
@@ -365,7 +365,10 @@ while getopts ${OPTSTRING} arg; do
         rm /etc/systemd/system/prometheus.service
         systemctl daemon-reload
       else
-        printf "You have to remove daemons node_exporter & prometheus manually!"
+        rm /etc/init.d/node_exporter
+        rm /etc/default/node_exporter
+        rm /etc/init.d/prometheus
+        rm /etc/default/prometheus
       fi
 
       exit 1
