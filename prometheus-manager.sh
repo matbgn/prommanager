@@ -69,7 +69,7 @@ function get_versions() {
 
 function get_status() {
 
-  systemctl 2>/dev/null
+  systemctl >/dev/null 2>&1
   if [ $? -eq 0 ]
   then
 
@@ -166,7 +166,7 @@ function update_node_exporter() {
 
 
 function init_node_exporter() {
-  systemctl 2>/dev/null
+  systemctl >/dev/null 2>&1
   if [ $? -eq 0 ]
   then
 
@@ -250,7 +250,7 @@ scrape_configs:
       - targets: ['localhost:${NODE_EXPORTER_PORT}']
 EOM
 
-  systemctl 2>/dev/null
+  systemctl >/dev/null 2>&1
   if [ $? -eq 0 ]
   then
 
@@ -327,7 +327,7 @@ while getopts ${OPTSTRING} arg; do
       get_status
       ;;
     k)
-      systemctl 2>/dev/null
+      systemctl >/dev/null 2>&1
       if [ $? -eq 0 ]
       then
         systemctl stop node_exporter
@@ -340,7 +340,7 @@ while getopts ${OPTSTRING} arg; do
       exit 1
       ;;
     r)
-      systemctl 2>/dev/null
+      systemctl >/dev/null 2>&1
       if [ $? -eq 0 ]
       then
         systemctl stop node_exporter
@@ -358,7 +358,7 @@ while getopts ${OPTSTRING} arg; do
       deluser --remove-home node_exporter
       deluser --remove-home prometheus
 
-      systemctl 2>/dev/null
+      systemctl >/dev/null 2>&1
       if [ $? -eq 0 ]
       then
         rm /etc/systemd/system/node_exporter.service
