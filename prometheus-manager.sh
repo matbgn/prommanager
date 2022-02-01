@@ -1,5 +1,5 @@
 #!/bin/bash
-printf "Welcome to Prometheus manager!\n\n" # print to screen
+printf "Welcome to Prometheus manager v0.1.1!\n\n" # print to screen
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
