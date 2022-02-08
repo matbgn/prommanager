@@ -173,6 +173,7 @@ EOM
     systemctl start node_exporter
   else
     service node_exporter start >/dev/null 2>&1
+    update-rc.d node_exporter defaults
     if [ $? -ne 0 ]
     then
       printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
@@ -265,6 +266,7 @@ EOM
     systemctl start prometheus
   else
     service prometheus start >/dev/null 2>&1
+    update-rc.d prometheus defaults
     if [ $? -ne 0 ]
     then
       printf "You have to install and start prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
@@ -358,6 +360,8 @@ while getopts ${OPTSTRING} arg; do
         rm /etc/default/node_exporter
         rm /etc/init.d/prometheus
         rm /etc/default/prometheus
+        update-rc.d node_exporter remove
+        update-rc.d prometheus remove
       fi
 
       exit 1
