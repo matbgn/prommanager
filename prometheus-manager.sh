@@ -1,11 +1,11 @@
 #!/bin/bash
-printf "Welcome to Prometheus manager v0.3.0!\n\n" # print to screen
+printf "Welcome to Prometheus manager v0.3.1!\n\n" # print to screen
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
 
 NODE_EXPORTER_VERSION=1.3.1 # -> can be changed by script argument -N 1.1.2
-PROMETHEUS_VERSION=2.33.0 # -> can be changed by script argument -P 2.27.1
+PROMETHEUS_VERSION=2.33.4 # -> can be changed by script argument -P 2.27.1
 
 NODE_EXPORTER_PORT=9500
 PROMETHEUS_PORT=9590
