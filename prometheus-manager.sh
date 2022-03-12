@@ -1,69 +1,225 @@
 #!/bin/bash
-printf "Welcome to Prometheus manager v0.3.1!\n\n" # print to screen
+MODT="Welcome to Prometheus manager v1.0.0!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
 
-NODE_EXPORTER_VERSION=1.3.1 # -> can be changed by script argument -N 1.1.2
-PROMETHEUS_VERSION=2.33.4 # -> can be changed by script argument -P 2.27.1
+# Retrieve versions from .env file in form of:
+# NODE_EXPORTER_VERSION=1.3.1
+# PROMETHEUS_VERSION=2.33.5
+file=$(cat .env)
+for line in $file
+do
+    eval "${line%=*}"="${line##*=}"
+done
 
 NODE_EXPORTER_PORT=9500
 PROMETHEUS_PORT=9590
 
-UPDATE_NODE_EXPORTER=false # -> can be changed by script argument -u
-UPDATE_PROMETHEUS=false # -> can be changed by script argument -u
+INSTALL=false
 
-INIT_NODE_EXPORTER=false # -> can be changed by script argument -i
-INIT_PROMETHEUS=false # -> can be changed by script argument -i
+EXECUTE=false
 
 NODE_TRIGGER=false # -> can be changed either by script argument -n or -N 1.1.2 or -b
 PROMETHEUS_TRIGGER=false # -> can be changed either by script argument -p or -P 2.27.1 or -b
 
-
 function usage {
-        echo "Usage: $(basename "$0") [-uilbnpksv] [-a arm64] [-N 1.1.2] [-P 2.27.1] [-r all]" 2>&1
-        echo '   -a arm64                   Set architecture, default is amd64'
-        echo '   -u                         Update node and/or prometheus if specified with corresponding param -n/-p/-b'
-        echo '   -i                         Initialize node and/or prometheus if specified with corresponding param -n/-p/-b'
-        echo '   -l                         List all ports used'
-        echo '   -b                         Process both node_exporter and prometheus with default script version'
-        echo '   -n                         Process node_exporter with default script version'
-        echo '   -N 1.1.2                   Specify node_exporter version'
-        echo '   -p                         Process Prometheus with default script version'
-        echo '   -P 2.27.1                  Specify prometheus version'
-        echo '   -k                         Stop daemons for both prometheus and node_exporter'
-        echo '   -s                         Prompt services status'
-        echo '   -v                         Get all possible versions'
-        echo '   -r all                     Remove all data, users and services'
+        echo "Usage: $(basename "$0") [<flags>]" 2>&1
+        echo '   -h, --help                 Show this help context'
+        echo '   -V, --versions             Retrieve versions of all available apps (prometheus, node_exporter, etc.)'
+        echo '   -s, --status               Prompt services status'
+        echo '   --ports                    List all ports actually used'
+        echo '   --arch arm64               Set architecture, default is amd64'
+        echo '   -I, --install              Install services combined with corresponding params e.g. --all'
+        echo '   -E, --exec                 Execute services combined with corresponding params e.g. --all'
+        echo '   --all                      Process script for all available apps (prometheus, node_exporter, etc.)'
+        echo '   -n, --node                 Process for node_exporter'
+        echo '   -N [<version>]             Specify node_exporter version'
+        echo '   -p, --prom                 Process for Prometheus'
+        echo '   -P [<version>]             Specify prometheus version'
+        echo '   -k, --kill                 Stop daemons for both prometheus and node_exporter'
+        echo '   --remove-all               Remove all data, users and services'
         exit 1
 }
 
-# Define list of arguments expected in the input
-# The following getopts command specifies that options N and P have arguments
-OPTSTRING=":a:uilbnN:pP:ksvr:"
 
-if [[ ${#} -eq 0 ]]; then
-   usage
-fi
+function flags() {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -h|--help)
+        usage
+        exit 1
+        ;;
+      -V|--versions)
+        get_versions
+        shift # argument
+        ;;
+      -s|--status)
+        get_status
+        shift # argument
+        ;;
+      --ports)
+        list_used_ports
+        shift # argument
+        ;;
+      --arch)
+        SYSTEM_ARCH="$2"
+        shift # argument
+        shift # value
+        ;;
+      -I|--install)
+        INSTALL=true
+        shift # argument
+        ;;
+      -E|--exec)
+        EXECUTE=true
+        shift # argument
+        ;;
+      --all)
+        NODE_TRIGGER=true
+        PROMETHEUS_TRIGGER=true
+        shift # argument
+        ;;
+      -n|--node)
+        NODE_TRIGGER=true
+        shift # argument
+        ;;
+      -N)
+        NODE_EXPORTER_VERSION="$2"
+        NODE_TRIGGER=true
+        shift # argument
+        shift # value
+        ;;
+      -p|--prom)
+        PROMETHEUS_TRIGGER=true
+        shift # argument
+        ;;
+      -P)
+        PROMETHEUS_VERSION="$2"
+        PROMETHEUS_TRIGGER=true
+        shift # argument
+        shift # value
+        ;;
+      -k|--kill)
+        systemctl >/dev/null 2>&1
+        if [ $? -eq 0 ]
+        then
+          systemctl stop node_exporter
+          systemctl stop prometheus
+        else
+          service node_exporter stop
+          service prometheus stop
+        fi
+        echo
+        get_status
+        exit 1
+        ;;
+      --remove-all)
+        systemctl >/dev/null 2>&1
+        if [ $? -eq 0 ]
+        then
+          systemctl stop node_exporter
+          systemctl stop prometheus
+        else
+          service node_exporter stop
+          service prometheus stop
+        fi
+        rm /usr/local/bin/node_exporter
+        rm /usr/local/bin/prometheus
+        rm /usr/local/bin/promtool
+        rm -rf /etc/prometheus
+        rm -rf /var/lib/prometheus/
+
+        deluser --remove-home node_exporter
+        deluser --remove-home prometheus
+
+        systemctl >/dev/null 2>&1
+        if [ $? -eq 0 ]
+        then
+          rm /etc/systemd/system/node_exporter.service
+          rm /etc/systemd/system/prometheus.service
+          systemctl daemon-reload
+        else
+          rm /etc/init.d/node_exporter
+          rm /etc/default/node_exporter
+          rm /etc/init.d/prometheus
+          rm /etc/default/prometheus
+          update-rc.d node_exporter remove
+          update-rc.d prometheus remove
+        fi
+
+        exit 1
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+        exit 1
+        ;;
+      *)
+        POSITIONAL_ARGS+=("$1") # save positional arg
+        shift # past argument
+        ;;
+    esac
+  done
+}
 
 
-function get_versions() {
-  printf "Installation version for node_exporter will be: %s" "$NODE_EXPORTER_VERSION"
+function check_root_rights(){
+  if [ `id -u` -ne 0 ]
+  then
+    echo "[WARN] This script require sudo rights to run smoothly"
+  fi
+}
 
-  curl -s https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep "tag_name" |
-  awk '{printf "\nHighest available version for node_exporter is: %s", substr($2, 3, length($2)-4)}'
 
-  printf "\nActual version of node_exporter is:\n"
+function get_node_version() {
+  NODE_EXPORTER_VERSION_CURLED=$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases/latest |
+  grep "tag_name" | awk '{printf substr($2, 3, length($2)-4)}')
+
+  if [[ -n $NODE_EXPORTER_VERSION_CURLED ]]
+  then
+    NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION_CURLED
+  fi
+
+  printf "Highest available version for node_exporter is: %s\n" "$NODE_EXPORTER_VERSION_CURLED"
+
+  printf "Installation version for node_exporter will be: %s\n" "$NODE_EXPORTER_VERSION"
+
+  printf "Actual version of node_exporter is:\n"
   /usr/local/bin/node_exporter --version
+}
 
-  printf "\nInstallation version for Prometheus will be: %s" "$PROMETHEUS_VERSION"
 
-  curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest | grep "tag_name" |
-  awk '{printf "\nHighest available version for Prometheus is: %s\n", substr($2, 3, length($2)-4)}'
+function get_prometheus_version() {
+  PROMETHEUS_VERSION_CURLED=$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest |
+  grep "tag_name" | awk '{printf substr($2, 3, length($2)-4)}')
+
+  if [[ -n $PROMETHEUS_VERSION_CURLED ]]
+  then
+    PROMETHEUS_VERSION=$PROMETHEUS_VERSION_CURLED
+  fi
+
+  printf "\nHighest available version for Prometheus is: %s\n" "$PROMETHEUS_VERSION_CURLED"
+
+  printf "Installation version for Prometheus will be: %s\n" "$PROMETHEUS_VERSION"
 
   /usr/local/bin/prometheus --version | awk 'NR==1 {printf "Actual version of Prometheus is: %s\n", $3}'
   test -f /usr/local/bin/promtool && echo Promtool is present
   echo
+}
+
+
+function set_versions() {
+  cat > .env << EOM
+NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION
+PROMETHEUS_VERSION=$PROMETHEUS_VERSION
+EOM
+}
+
+
+function get_versions() {
+  get_node_version
+  get_prometheus_version
+  set_versions
 }
 
 
@@ -110,29 +266,24 @@ function get_status() {
   fi
 }
 
+
 function list_used_ports() {
-  if ! command -v netstat &> /dev/null
+  if ! command -v lsof &> /dev/null
   then
-    echo "Netstat could not be found, install it first (via net-tools package)!"
+    echo "Command lsof could not be found, install it first!"
     echo
     exit
   else
     printf "Actual ports used on this machine:\n"
-    netstat -plnt
+    lsof -n -i -P | grep LISTEN
     echo
   fi
 }
 
 
-function set_users() {
-  useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
-  useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
-  echo
-}
-
-
 function update_node_exporter() {
   printf "Update node_exporter\n"
+  useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
   test -f node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}.tar.gz || curl -OL https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}.tar.gz
 
   tar xfz node_exporter-*.tar.gz &> /dev/null
@@ -195,6 +346,8 @@ function set_prometheus_folders() {
 
 function update_prometheus() {
   printf "Update Prometheus\n"
+  useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
+  set_prometheus_folders
   test -f prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}.tar.gz || curl -OL https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}.tar.gz
 
   tar xfz prometheus-*.tar.gz &> /dev/null
@@ -276,126 +429,38 @@ EOM
 }
 
 
-while getopts ${OPTSTRING} arg; do
-  case "${arg}" in
-    a)
-      SYSTEM_ARCH="${OPTARG}"
-      ;;
-    b)
-      NODE_TRIGGER=true
-      PROMETHEUS_TRIGGER=true
-      ;;
-    n)
-      NODE_TRIGGER=true
-      ;;
-    N)
-      NODE_EXPORTER_VERSION="${OPTARG}"
-      NODE_TRIGGER=true
-      ;;
-    p)
-      PROMETHEUS_TRIGGER=true
-      ;;
-    P)
-      PROMETHEUS_VERSION="${OPTARG}"
-      PROMETHEUS_TRIGGER=true
-      ;;
-    u)
-      UPDATE_NODE_EXPORTER=true
-      UPDATE_PROMETHEUS=true
-      ;;
-    i)
-      INIT_NODE_EXPORTER=true
-      INIT_PROMETHEUS=true
-      ;;
-    l)
-      list_used_ports
-      ;;
-    v)
-      get_versions
-      ;;
-    s)
-      get_status
-      ;;
-    k)
-      systemctl >/dev/null 2>&1
-      if [ $? -eq 0 ]
-      then
-        systemctl stop node_exporter
-        systemctl stop prometheus
-      else
-        service node_exporter stop
-        service prometheus stop
-      fi
-      echo
-      get_status
-      exit 1
-      ;;
-    r)
-      systemctl >/dev/null 2>&1
-      if [ $? -eq 0 ]
-      then
-        systemctl stop node_exporter
-        systemctl stop prometheus
-      else
-        service node_exporter stop
-        service prometheus stop
-      fi
-      rm /usr/local/bin/node_exporter
-      rm /usr/local/bin/prometheus
-      rm /usr/local/bin/promtool
-      rm -rf /etc/prometheus
-      rm -rf /var/lib/prometheus/
+# shellcheck disable=SC2120
+function main() {
+  printf 'Selected architecture is %s\n\n' $SYSTEM_ARCH
 
-      deluser --remove-home node_exporter
-      deluser --remove-home prometheus
+  if $INSTALL && $NODE_TRIGGER; then
+    update_node_exporter
+  fi
+  if $INSTALL && $PROMETHEUS_TRIGGER; then
+    update_prometheus
+  fi
 
-      systemctl >/dev/null 2>&1
-      if [ $? -eq 0 ]
-      then
-        rm /etc/systemd/system/node_exporter.service
-        rm /etc/systemd/system/prometheus.service
-        systemctl daemon-reload
-      else
-        rm /etc/init.d/node_exporter
-        rm /etc/default/node_exporter
-        rm /etc/init.d/prometheus
-        rm /etc/default/prometheus
-        update-rc.d node_exporter remove
-        update-rc.d prometheus remove
-      fi
+  if $EXECUTE && $NODE_TRIGGER; then
+    init_node_exporter
+  fi
+  if $EXECUTE && $PROMETHEUS_TRIGGER; then
+    init_prometheus
+  fi
 
-      exit 1
-      ;;
-    ?)
-      echo "Invalid option: -${OPTARG}."
-      echo
-      usage
-      ;;
-  esac
-done
+  if $EXECUTE; then
+    get_versions
+  fi
+}
 
-# Initial jobs to ensure script working smoothly
-# shellcheck disable=SC2199
-if [[ ${@} == *u* || ${@} == *i* ]]; then
-  set_users
-  set_prometheus_folders
+
+echo "$MODT"
+check_root_rights
+echo
+
+if [[ ${#} -eq 0 ]]; then
+   usage
 fi
 
-if $UPDATE_NODE_EXPORTER && $NODE_TRIGGER; then
-  update_node_exporter
-fi
-if $UPDATE_PROMETHEUS && $PROMETHEUS_TRIGGER; then
-  update_prometheus
-fi
-
-if $INIT_NODE_EXPORTER && $NODE_TRIGGER; then
-  init_node_exporter
-fi
-if $INIT_PROMETHEUS && $PROMETHEUS_TRIGGER; then
-  init_prometheus
-fi
-
-# shellcheck disable=SC2199
-if [[ ${@} == *u* || ${@} == *i* ]]; then
-  get_status
-fi
+flags "$@"
+# shellcheck disable=SC2119
+main
