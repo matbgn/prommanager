@@ -1,55 +1,4 @@
-= Prometheus Manager
-:icons: font
-ifdef::env-github[]
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
-endif::[]
-
-== Description
-Manager to install, update, init Prometheus and node_exporter.
-
-== Installation
-    wget https://raw.githubusercontent.com/matbgn/prometheus-manager/master/prometheus-manager.sh
-        OR
-    curl -OL https://raw.githubusercontent.com/matbgn/prometheus-manager/master/prometheus-manager.sh
-    chmod +x prometheus-manager.sh
-    ./prometheus-manager.sh -sv
-
-== Usage
-Get helper by running this command:
-
-    sudo ./prometheus-manager.sh -h
-
-== OS Architecture
-Specify which one you want with (default is amd64):
-
-    sudo ./prometheus-manager.sh -a arm64
-
-== Pull latest release versions
-Get info with:
-
-    sudo ./prometheus-manager.sh -v
-
-Then specify which version you will install by:
-
-    sudo ./prometheus-manager.sh -u -N 1.1.2 -P 2.2.7
-
-Or let the default versions for both (hard coded in script) do the job:
-
-    sudo ./prometheus-manager.sh -unp
-
-Equivalent to:
-
-    sudo ./prometheus-manager.sh -ub
-
-== Get actual services status
-
-    sudo ./prometheus-manager.sh -s
-    
-== Upgrading OpenSSL, Curl and wget on Debian 6/7 or Ubuntu 8
+# Upgrading OpenSSL, Curl and wget on Debian 6/7 or Ubuntu 8
 First install dev dependencies
 
     sudo apt-get install libz-dev build-essential
@@ -65,7 +14,7 @@ possibly use a bridge FTP server like this (if you are not able at all to wget i
     bye
     ENDFTP
     
-=== Build OpenSSL from source
+## Build OpenSSL from source
 
     tar -xzf openssl-1.1.1m.tar.gz
     cd openssl-1.1.1m
@@ -73,7 +22,7 @@ possibly use a bridge FTP server like this (if you are not able at all to wget i
     make
     sudo make install
     
-=== Build Curl from source
+## Build Curl from source
 
     sudo apt-get remove curl
     tar -xzf curl-7.81.0.tar.gz
@@ -83,7 +32,7 @@ possibly use a bridge FTP server like this (if you are not able at all to wget i
     sudo make install
     ln -s /usr/local/bin/curl /usr/bin/curl
 
-=== Upgrade wget with curl already upgraded
+## Upgrade wget with curl already upgraded
 
     sudo apt-get remove wget
     curl -O  http://ftp.gnu.org/gnu/wget/wget-1.21.tar.gz
@@ -94,7 +43,7 @@ possibly use a bridge FTP server like this (if you are not able at all to wget i
     sudo make install
     ln -s /usr/local/bin/wget /usr/bin/wget
 
-=== WARNING: Don't forget to update ca-certificates locally
+## WARNING: Don't forget to update ca-certificates locally
 
     update-ca-certificates --fresh
 
@@ -111,7 +60,7 @@ Download corresponding certificate, add it to `/etc/ssl/certs` and update ca-cer
     update-ca-certificates --fresh
 
     
-=== Check your versions and functionnality
+## Check your versions and functionnality
     
     openssl version
     wget -V
