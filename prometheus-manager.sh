@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v1.0.0!"
+MODT="Welcome to Prometheus manager v2.0.0!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -32,17 +32,18 @@ NODE_EXPORTER_PORT=9500
 PROMETHEUS_PORT=9590
 
 EXECUTE=false
+KILL_APPS=false
 
 function usage {
         echo "Usage: $(basename "$0") [<flags>]" 2>&1
         echo '   -h, --help                          Show this help context'
         echo '   -v, --verbose                       Adaptative verbose mode (-vv for WARN, -vvv for INFO, -vvvv for full debugging)'
         echo '   -V, --versions [--<all|apps>]       Display versions combined with corresponding params e.g. --all|--node|--prom|...'
-        echo '   --update-versions [--<all|apps>]    Retrieve online combined with corresponding params e.g. --all|--node|--prom|...'
+        echo '   --update-versions [--<all|apps>]    Retrieve last version number online combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   -I, --install [--<all|apps>]        Install services combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   -E, --exec [--<all|apps>]           Execute services combined with corresponding params e.g. --all|--node|--prom|...'
-        echo '   -s, --status                        Prompt services status'
-        echo '   -k, --kill                          Stop daemons for both prometheus and node_exporter'
+        echo '   -S, --status                        Prompt services status'
+        echo '   -K, --kill [--<all|apps>]           Stop daemons combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   --remove-all                        Remove all data, users and services'
         echo '   --all                               Process script for all available apps (prometheus, node_exporter, etc.)'
         echo '   -n, --node                          Process for node_exporter'
@@ -91,26 +92,20 @@ function flags() {
         UPDATE_VERSIONS=true
         shift # argument
         ;;
-      -s|--status)
-        get_status
-        shift # argument
-        ;;
-      --list-ports)
-        list_used_ports
-        shift # argument
-        ;;
-      --arch)
-        check_options_mandatory "$2"
-        SYSTEM_ARCH="$2"
-        shift # argument
-        shift # value
-        ;;
       -I|--install)
         INSTALL=true
         shift # argument
         ;;
       -E|--exec)
         EXECUTE=true
+        shift # argument
+        ;;
+      -S|--status)
+        get_status
+        shift # argument
+        ;;
+      -K|--kill)
+        KILL_APPS=true
         shift # argument
         ;;
       --all)
@@ -164,20 +159,6 @@ function flags() {
         shift # argument
         shift # value
         ;;
-      -k|--kill)
-        systemctl >/dev/null 2>&1
-        if [ $? -eq 0 ]
-        then
-          systemctl stop node_exporter
-          systemctl stop prometheus
-        else
-          service node_exporter stop
-          service prometheus stop
-        fi
-        echo
-        get_status
-        exit 1
-        ;;
       --remove-all)
         systemctl >/dev/null 2>&1
         if [ $? -eq 0 ]
@@ -188,6 +169,7 @@ function flags() {
           service node_exporter stop
           service prometheus stop
         fi
+        sleep 1
         rm /usr/local/bin/node_exporter
         rm /usr/local/bin/prometheus
         rm /usr/local/bin/promtool
@@ -213,6 +195,16 @@ function flags() {
         fi
 
         exit 1
+        ;;
+      --list-ports)
+        list_used_ports
+        shift # argument
+        ;;
+      --arch)
+        check_options_mandatory "$2"
+        SYSTEM_ARCH="$2"
+        shift # argument
+        shift # value
         ;;
       --offline)
         DEBUG_OFFLINE=true
@@ -247,7 +239,7 @@ function check_options_mandatory() {
 
 
 function check_root_rights(){
-  if [ `id -u` -ne 0 ]
+  if [ "$(id -u)" -ne 0 ]
   then
     echo "[ERROR] This script require sudo rights to run smoothly"
   fi
@@ -367,10 +359,7 @@ function ensure_versions() {
 
 
 function store_actual_versions() {
-  if [ $LOG_LEVEL -gt 3 ]
-  then
-    echo '[DEBUG] Storing new versions in .versions file...'
-  fi
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Storing new versions in .versions file...'; fi
   cat > .versions << EOM
 NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION
 BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION
@@ -379,6 +368,7 @@ ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION
 EOM
 
   chmod 666 .versions
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Versions stored locally'; fi
 }
 
 
@@ -473,6 +463,189 @@ function display_versions() {
 }
 
 
+function download_node_exporter() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Download node_exporter\n"; fi
+  useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
+  test -f node_exporter-"$NODE_EXPORTER_VERSION".linux-"$SYSTEM_ARCH".tar.gz ||
+  curl -OL https://github.com/prometheus/node_exporter/releases/download/v"$NODE_EXPORTER_VERSION"/node_exporter-"$NODE_EXPORTER_VERSION".linux-"$SYSTEM_ARCH".tar.gz
+
+  tar xfz node_exporter-*.tar.gz &> /dev/null
+  cp node_exporter-"$NODE_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/node_exporter /usr/local/bin
+  chown node_exporter:node_exporter /usr/local/bin/node_exporter
+
+  rm -rf node_exporter-"$NODE_EXPORTER_VERSION"*
+}
+
+
+function init_node_exporter() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Setting node_exporter daemon\n"; fi
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+
+    cat > /etc/systemd/system/node_exporter.service <<EOM
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter \
+  --collector.systemd \
+  --collector.processes \
+  --web.listen-address=:${NODE_EXPORTER_PORT}
+
+[Install]
+WantedBy=multi-user.target
+EOM
+
+
+    systemctl daemon-reload
+    systemctl enable node_exporter
+  else
+    update-rc.d node_exporter defaults
+    if [ $? -ne 0 ]
+    then
+      printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
+      printf "$ pleaserun --user node_exporter --group node_exporter --install /usr/local/bin/node_exporter --collector.processes --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
+    fi
+  fi
+}
+
+
+function install_node_exporter() {
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting node_exporter installation'; fi
+  download_node_exporter
+  init_node_exporter
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] node_exporter installed'; fi
+}
+
+
+function set_prometheus_folders() {
+  mkdir /etc/prometheus &> /dev/null
+  mkdir /var/lib/prometheus &> /dev/null
+  ls /etc | grep prometheus | awk '{printf "Directories %s:\n", $1}'
+  chown prometheus:prometheus /etc/prometheus &> /dev/null && ls -all /etc | grep prometheus
+  chown prometheus:prometheus /var/lib/prometheus && ls -all /var/lib/ | grep prometheus
+  echo
+}
+
+
+function download_prometheus() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Download prometheus\n"; fi
+  useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
+  set_prometheus_folders
+  test -f prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH".tar.gz || curl -OL https://github.com/prometheus/prometheus/releases/download/v"$PROMETHEUS_VERSION"/prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH".tar.gz
+
+  tar xfz prometheus-*.tar.gz &> /dev/null
+  cp prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH"/prometheus /usr/local/bin
+  cp prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH"/promtool /usr/local/bin
+  chown prometheus:prometheus /usr/local/bin/prometheus
+  chown prometheus:prometheus /usr/local/bin/promtool
+
+  cp -r prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH"/consoles /etc/prometheus
+  cp -r prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH"/console_libraries /etc/prometheus
+  chown -R prometheus:prometheus /etc/prometheus/consoles
+  chown -R prometheus:prometheus /etc/prometheus/console_libraries
+
+  rm -rf prometheus-"$PROMETHEUS_VERSION"*
+}
+
+
+function init_prometheus() {
+  cat > /etc/prometheus/prometheus.yml <<EOM
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first.rules"
+  # - "second.rules"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:${PROMETHEUS_PORT}']
+
+  - job_name: 'node_exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:${NODE_EXPORTER_PORT}']
+EOM
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+
+    cat > /etc/systemd/system/prometheus.service <<EOM
+[Unit]
+  Description=Prometheus Monitoring
+  Wants=network-online.target
+  After=network-online.target
+
+
+[Service]
+  User=prometheus
+  Group=prometheus
+  Type=simple
+  ExecStart=/usr/local/bin/prometheus \
+  --config.file /etc/prometheus/prometheus.yml \
+  --storage.tsdb.path /var/lib/prometheus/ \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.console.libraries=/etc/prometheus/console_libraries \
+  --web.listen-address=:${PROMETHEUS_PORT}
+  ExecReload=/bin/kill -HUP ${MAINPID}
+
+[Install]
+  WantedBy=multi-user.target
+EOM
+
+    systemctl daemon-reload
+    systemctl enable prometheus
+  else
+    update-rc.d prometheus defaults
+    if [ $? -ne 0 ]
+    then
+      printf "You have to install and start prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
+      printf "$ pleaserun --user prometheus --group prometheus --install /usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --web.console.templates=/etc/prometheus/consoles --web.console.libraries=/etc/prometheus/console_libraries --web.listen-address=:%s\n\n" "$PROMETHEUS_PORT"
+    fi
+  fi
+}
+
+
+function install_prometheus() {
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting prometheus installation'; fi
+  download_prometheus
+  init_prometheus
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] prometheus installed'; fi
+}
+
+
+function install_apps() {
+  if $NODE_TRIGGER; then install_node_exporter; fi
+  if $PROMETHEUS_TRIGGER; then install_prometheus; fi
+}
+
+
+function start_apps() {
+  if $NODE_TRIGGER; then service node_exporter start; fi
+  if $PROMETHEUS_TRIGGER; then service node_exporter start; fi
+}
+
+
+function stop_apps() {
+  if $NODE_TRIGGER; then service node_exporter stop; fi
+  if $PROMETHEUS_TRIGGER; then service prometheus stop; fi
+}
+
+
 function get_status() {
 
   systemctl >/dev/null 2>&1
@@ -531,157 +704,16 @@ function list_used_ports() {
 }
 
 
-function install_node_exporter() {
-  printf "Update node_exporter\n"
-  useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
-  test -f node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}.tar.gz || curl -OL https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}.tar.gz
-
-  tar xfz node_exporter-*.tar.gz &> /dev/null
-  cp node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}/node_exporter /usr/local/bin
-  chown node_exporter:node_exporter /usr/local/bin/node_exporter
-
-  rm -rf node_exporter-${NODE_EXPORTER_VERSION}*
-}
-
-
-function init_node_exporter() {
-  systemctl >/dev/null 2>&1
-  if [ $? -eq 0 ]
-  then
-
-    cat > /etc/systemd/system/node_exporter.service <<EOM
-[Unit]
-Description=Node Exporter
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-User=node_exporter
-Group=node_exporter
-Type=simple
-ExecStart=/usr/local/bin/node_exporter \
-  --collector.systemd \
-  --collector.processes \
-  --web.listen-address=:${NODE_EXPORTER_PORT}
-
-[Install]
-WantedBy=multi-user.target
-EOM
-
-
-    systemctl daemon-reload
-    systemctl enable node_exporter
-    systemctl start node_exporter
-  else
-    service node_exporter start >/dev/null 2>&1
-    update-rc.d node_exporter defaults
-    if [ $? -ne 0 ]
-    then
-      printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
-      printf "$ pleaserun --user node_exporter --group node_exporter --install /usr/local/bin/node_exporter --collector.processes --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
-    fi
-  fi
-}
-
-
-function set_prometheus_folders() {
-  mkdir /etc/prometheus &> /dev/null
-  mkdir /var/lib/prometheus &> /dev/null
-  ls /etc | grep prometheus | awk '{printf "Directories %s:\n", $1}'
-  chown prometheus:prometheus /etc/prometheus &> /dev/null && ls -all /etc | grep prometheus
-  chown prometheus:prometheus /var/lib/prometheus && ls -all /var/lib/ | grep prometheus
-  echo
-}
-
-
-function install_prometheus() {
-  printf "Update Prometheus\n"
-  useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
-  set_prometheus_folders
-  test -f prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}.tar.gz || curl -OL https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}.tar.gz
-
-  tar xfz prometheus-*.tar.gz &> /dev/null
-  cp prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}/prometheus /usr/local/bin
-  cp prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}/promtool /usr/local/bin
-  chown prometheus:prometheus /usr/local/bin/prometheus
-  chown prometheus:prometheus /usr/local/bin/promtool
-
-  cp -r prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}/consoles /etc/prometheus
-  cp -r prometheus-${PROMETHEUS_VERSION}.linux-${SYSTEM_ARCH}/console_libraries /etc/prometheus
-  chown -R prometheus:prometheus /etc/prometheus/consoles
-  chown -R prometheus:prometheus /etc/prometheus/console_libraries
-
-  rm -rf prometheus-${PROMETHEUS_VERSION}*
-}
-
-
-function init_prometheus() {
-  cat > /etc/prometheus/prometheus.yml <<EOM
-global:
-  scrape_interval:     15s
-  evaluation_interval: 15s
-
-rule_files:
-  # - "first.rules"
-  # - "second.rules"
-
-scrape_configs:
-  - job_name: 'prometheus'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['localhost:${PROMETHEUS_PORT}']
-
-  - job_name: 'node_exporter'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['localhost:${NODE_EXPORTER_PORT}']
-EOM
-
-  systemctl >/dev/null 2>&1
-  if [ $? -eq 0 ]
-  then
-
-    cat > /etc/systemd/system/prometheus.service <<EOM
-[Unit]
-  Description=Prometheus Monitoring
-  Wants=network-online.target
-  After=network-online.target
-
-
-[Service]
-  User=prometheus
-  Group=prometheus
-  Type=simple
-  ExecStart=/usr/local/bin/prometheus \
-  --config.file /etc/prometheus/prometheus.yml \
-  --storage.tsdb.path /var/lib/prometheus/ \
-  --web.console.templates=/etc/prometheus/consoles \
-  --web.console.libraries=/etc/prometheus/console_libraries \
-  --web.listen-address=:${PROMETHEUS_PORT}
-  ExecReload=/bin/kill -HUP ${MAINPID}
-
-[Install]
-  WantedBy=multi-user.target
-EOM
-
-    systemctl daemon-reload
-    systemctl enable prometheus
-    systemctl start prometheus
-  else
-    service prometheus start >/dev/null 2>&1
-    update-rc.d prometheus defaults
-    if [ $? -ne 0 ]
-    then
-      printf "You have to install and start prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
-      printf "$ pleaserun --user prometheus --group prometheus --install /usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --web.console.templates=/etc/prometheus/consoles --web.console.libraries=/etc/prometheus/console_libraries --web.listen-address=:%s\n\n" "$PROMETHEUS_PORT"
-    fi
-  fi
-}
-
-
 # shellcheck disable=SC2120
 function main() {
-  printf 'Selected architecture is %s\n\n' $SYSTEM_ARCH
+  printf 'Selected architecture is %s\n\n' "$SYSTEM_ARCH"
+
+  if $KILL_APPS; then
+    stop_apps
+    sleep 1
+    get_status
+    exit 1
+  fi
 
   if $UPDATE_VERSIONS; then
     update_versions
@@ -691,21 +723,13 @@ function main() {
     display_versions
   fi
 
-  if $INSTALL && $NODE_TRIGGER; then
-    install_node_exporter
-  fi
-  if $INSTALL && $PROMETHEUS_TRIGGER; then
-    install_prometheus
-  fi
-
-  if $EXECUTE && $NODE_TRIGGER; then
-    init_node_exporter
-  fi
-  if $EXECUTE && $PROMETHEUS_TRIGGER; then
-    init_prometheus
+  if $INSTALL; then
+    install_apps
   fi
 
   if $EXECUTE; then
+    start_apps
+    sleep 1
     get_status
   fi
 }
