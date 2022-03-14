@@ -37,13 +37,13 @@ function usage {
         echo "Usage: $(basename "$0") [<flags>]" 2>&1
         echo '   -h, --help                          Show this help context'
         echo '   -v, --verbose                       Adaptative verbose mode (-vv for WARN, -vvv for INFO, -vvvv for full debugging)'
-        echo '   -V, --versions [--<all|apps>]       Display versions of all available apps (prometheus, node_exporter, etc.)'
-        echo '   --update-versions [--<all|apps>]    Retrieve and override versions numbers for selected apps (prometheus, node_exporter, etc.)'
+        echo '   -V, --versions [--<all|apps>]       Display versions combined with corresponding params e.g. --all|--node|--prom|...'
+        echo '   --update-versions [--<all|apps>]    Retrieve online combined with corresponding params e.g. --all|--node|--prom|...'
+        echo '   -I, --install [--<all|apps>]        Install services combined with corresponding params e.g. --all|--node|--prom|...'
+        echo '   -E, --exec [--<all|apps>]           Execute services combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   -s, --status                        Prompt services status'
-        echo '   --ports                             List all ports actually used'
-        echo '   --arch arm64                        Set architecture, default is amd64'
-        echo '   -I, --install                       Install services combined with corresponding params e.g. --all'
-        echo '   -E, --exec                          Execute services combined with corresponding params e.g. --all'
+        echo '   -k, --kill                          Stop daemons for both prometheus and node_exporter'
+        echo '   --remove-all                        Remove all data, users and services'
         echo '   --all                               Process script for all available apps (prometheus, node_exporter, etc.)'
         echo '   -n, --node                          Process for node_exporter'
         echo '   -N [<version>]                      Specify node_exporter version'
@@ -53,8 +53,8 @@ function usage {
         echo '   -P [<version>]                      Specify prometheus version'
         echo '   -a, --alert                         Process for alertmanager'
         echo '   -A [<version>]                      Specify alertmanager version'
-        echo '   -k, --kill                          Stop daemons for both prometheus and node_exporter'
-        echo '   --remove-all                        Remove all data, users and services'
+        echo '   --list-ports                        List all ports actually used'
+        echo '   --arch arm64                        Set architecture, default is amd64'
         echo '   --offline                           For debug purpose only'
         exit 1
 }
@@ -95,7 +95,7 @@ function flags() {
         get_status
         shift # argument
         ;;
-      --ports)
+      --list-ports)
         list_used_ports
         shift # argument
         ;;
