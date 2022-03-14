@@ -43,7 +43,7 @@ function usage {
         echo '   --update-versions [--<all|apps>]    Retrieve last version number online combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   -I, --install [--<all|apps>]        Install services combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   -E, --exec [--<all|apps>]           Execute services combined with corresponding params e.g. --all|--node|--prom|...'
-        echo '   -S, --status                        Prompt services status'
+        echo '   -S, --status [--<all|apps>]         Prompt services status combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   -K, --kill [--<all|apps>]           Stop daemons combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   --remove-all                        Remove all data, users and services'
         echo '   --all                               Process script for all available apps (prometheus, node_exporter, etc.)'
@@ -471,6 +471,7 @@ function download_node_exporter() {
   useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
   test -f node_exporter-"$NODE_EXPORTER_VERSION".linux-"$SYSTEM_ARCH".tar.gz ||
   curl -OL https://github.com/prometheus/node_exporter/releases/download/v"$NODE_EXPORTER_VERSION"/node_exporter-"$NODE_EXPORTER_VERSION".linux-"$SYSTEM_ARCH".tar.gz
+  echo
 
   tar xfz node_exporter-*.tar.gz &> /dev/null
   cp node_exporter-"$NODE_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/node_exporter /usr/local/bin
@@ -549,7 +550,9 @@ function download_prometheus() {
   if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Download prometheus\n"; fi
   useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
   set_prometheus_folders
-  test -f prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH".tar.gz || curl -OL https://github.com/prometheus/prometheus/releases/download/v"$PROMETHEUS_VERSION"/prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH".tar.gz
+  test -f prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH".tar.gz ||
+  curl -OL https://github.com/prometheus/prometheus/releases/download/v"$PROMETHEUS_VERSION"/prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH".tar.gz
+  echo
 
   tar xfz prometheus-*.tar.gz &> /dev/null
   cp prometheus-"$PROMETHEUS_VERSION".linux-"$SYSTEM_ARCH"/prometheus /usr/local/bin
@@ -645,7 +648,7 @@ function install_apps() {
 
 function start_apps() {
   if $NODE_TRIGGER; then service node_exporter start; fi
-  if $PROMETHEUS_TRIGGER; then service node_exporter start; fi
+  if $PROMETHEUS_TRIGGER; then service prometheus start; fi
 }
 
 
@@ -655,9 +658,19 @@ function stop_apps() {
 }
 
 
-function get_status() {
+function get_node_status() {
   service node_exporter status | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
+}
+
+
+function get_prometheus_status() {
   service prometheus status | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+}
+
+
+function get_status() {
+  if $NODE_TRIGGER; then get_node_status; fi
+  if $PROMETHEUS_TRIGGER; then get_prometheus_status; fi
   echo
 }
 

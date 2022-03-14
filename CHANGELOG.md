@@ -5,6 +5,7 @@
 - Split display and retrieve options
 - Make get and display versions working with apps flags
 - Add possibility to start/stop apps separately
+- Retrieve status for each app independently via parameter
 
 12-MAR-2022: 1.0.0
 - Rewrite option argument parsing
