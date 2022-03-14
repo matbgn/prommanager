@@ -44,7 +44,7 @@ function usage {
         echo '   -h, --help                          Show this help context'
         echo '   -v, --verbose                       Adaptative verbose mode (-vv for WARN, -vvv for INFO, -vvvv for full debugging)'
         echo '   -V, --versions [all|<app>]          Display versions of all available apps (prometheus, node_exporter, etc.)'
-        echo '   -U, --update-versions [all|<app>]   Retrieve and override versions numbers for selected apps (prometheus, node_exporter, etc.)'
+        echo '   --update-versions [all|<app>]       Retrieve and override versions numbers for selected apps (prometheus, node_exporter, etc.)'
         echo '   -s, --status                        Prompt services status'
         echo '   --ports                             List all ports actually used'
         echo '   --arch arm64                        Set architecture, default is amd64'
