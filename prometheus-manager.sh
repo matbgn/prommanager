@@ -6,6 +6,8 @@ SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
 
 LOG_LEVEL=0
 
+DEBUG_OFFLINE=false
+
 # Retrieve versions from .versions file in form of:
 # NODE_EXPORTER_VERSION=1.3.1
 # PROMETHEUS_VERSION=2.33.5
@@ -55,6 +57,7 @@ function usage {
         echo '   -P [<version>]                      Specify prometheus version'
         echo '   -k, --kill                          Stop daemons for both prometheus and node_exporter'
         echo '   --remove-all                        Remove all data, users and services'
+        echo '   --offline                           For debug purpose only'
         exit 1
 }
 
@@ -241,6 +244,10 @@ function flags() {
 
         exit 1
         ;;
+      --offline)
+        DEBUG_OFFLINE=true
+        shift # argument
+        ;;
       -*|--*)
         echo "Unknown option $1"
         exit 1
@@ -412,9 +419,10 @@ function update_versions() {
 
 
 function display_node_versions() {
+  if $DEBUG_OFFLINE; then NODE_EXPORTER_VERSION_CURLED=""; else retrieve_node_version; fi
   if [ -z "$NODE_EXPORTER_VERSION_CURLED" ]
   then
-    NODE_EXPORTER_VERSION_CURLED="Run with -U, --update-versions command argument"
+    NODE_EXPORTER_VERSION_CURLED="You're offline"
   fi
   printf "Highest available version for node_exporter is: %s\n" "$NODE_EXPORTER_VERSION_CURLED"
 
@@ -430,9 +438,10 @@ function display_node_versions() {
 
 
 function display_blackbox_versions() {
+  if $DEBUG_OFFLINE; then BLACKBOX_EXPORTER_VERSION_CURLED=""; else retrieve_blackbox_version; fi
   if [ -z "$BLACKBOX_EXPORTER_VERSION_CURLED" ]
   then
-    BLACKBOX_EXPORTER_VERSION_CURLED="Run with -U, --update-versions command argument"
+    BLACKBOX_EXPORTER_VERSION_CURLED="You're offline"
   fi
   printf "Highest available version for blackbox_exporter is: %s\n" "$BLACKBOX_EXPORTER_VERSION_CURLED"
 
@@ -448,9 +457,10 @@ function display_blackbox_versions() {
 
 
 function display_prometheus_versions() {
+  if $DEBUG_OFFLINE; then PROMETHEUS_VERSION_CURLED=""; else retrieve_prometheus_version; fi
   if [ -z "$PROMETHEUS_VERSION_CURLED" ]
   then
-    PROMETHEUS_VERSION_CURLED="Run with -U, --update-versions command argument"
+    PROMETHEUS_VERSION_CURLED="You're offline"
   fi
   printf "Highest available version for Prometheus is: %s\n" "$PROMETHEUS_VERSION_CURLED"
 
@@ -467,9 +477,10 @@ function display_prometheus_versions() {
 
 
 function display_alertmanager_versions() {
+  if $DEBUG_OFFLINE; then ALERTMANAGER_VERSION_CURLED=""; else retrieve_alertmanager_version; fi
   if [ -z "$ALERTMANAGER_VERSION_CURLED" ]
   then
-    ALERTMANAGER_VERSION_CURLED="Run with -U, --update-versions command argument"
+    ALERTMANAGER_VERSION_CURLED="You're offline"
   fi
   printf "Highest available version for alertmanager is: %s\n" "$ALERTMANAGER_VERSION_CURLED"
 
@@ -550,7 +561,7 @@ function list_used_ports() {
 }
 
 
-function update_node_exporter() {
+function install_node_exporter() {
   printf "Update node_exporter\n"
   useradd --no-create-home --shell /bin/false node_exporter &> /dev/null || grep node_exporter /etc/passwd
   test -f node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}.tar.gz || curl -OL https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-${SYSTEM_ARCH}.tar.gz
@@ -613,7 +624,7 @@ function set_prometheus_folders() {
 }
 
 
-function update_prometheus() {
+function install_prometheus() {
   printf "Update Prometheus\n"
   useradd --no-create-home --shell /usr/sbin/nologin prometheus &> /dev/null || grep prometheus /etc/passwd
   set_prometheus_folders
@@ -711,10 +722,10 @@ function main() {
   fi
 
   if $INSTALL && $NODE_TRIGGER; then
-    update_node_exporter
+    install_node_exporter
   fi
   if $INSTALL && $PROMETHEUS_TRIGGER; then
-    update_prometheus
+    install_prometheus
   fi
 
   if $EXECUTE && $NODE_TRIGGER; then
@@ -725,7 +736,7 @@ function main() {
   fi
 
   if $EXECUTE; then
-    display_versions
+    get_status
   fi
 }
 
