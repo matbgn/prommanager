@@ -4,6 +4,7 @@
 - Check for argument when mandatory
 - Split display and retrieve options
 - Make get and display versions working with apps flags
+- Add possibility to start/stop apps separately
 
 12-MAR-2022: 1.0.0
 - Rewrite option argument parsing

@@ -33,6 +33,7 @@ PROMETHEUS_PORT=9590
 
 EXECUTE=false
 KILL_APPS=false
+STATUS_APPS=false
 
 function usage {
         echo "Usage: $(basename "$0") [<flags>]" 2>&1
@@ -101,7 +102,7 @@ function flags() {
         shift # argument
         ;;
       -S|--status)
-        get_status
+        STATUS_APPS=true
         shift # argument
         ;;
       -K|--kill)
@@ -161,6 +162,7 @@ function flags() {
         ;;
       --remove-all)
         systemctl >/dev/null 2>&1
+        # shellcheck disable=SC2181
         if [ $? -eq 0 ]
         then
           systemctl stop node_exporter
@@ -180,6 +182,7 @@ function flags() {
         deluser --remove-home prometheus
 
         systemctl >/dev/null 2>&1
+        # shellcheck disable=SC2181
         if [ $? -eq 0 ]
         then
           rm /etc/systemd/system/node_exporter.service
@@ -529,10 +532,16 @@ function install_node_exporter() {
 function set_prometheus_folders() {
   mkdir /etc/prometheus &> /dev/null
   mkdir /var/lib/prometheus &> /dev/null
-  ls /etc | grep prometheus | awk '{printf "Directories %s:\n", $1}'
-  chown prometheus:prometheus /etc/prometheus &> /dev/null && ls -all /etc | grep prometheus
-  chown prometheus:prometheus /var/lib/prometheus && ls -all /var/lib/ | grep prometheus
-  echo
+
+  chown prometheus:prometheus /etc/prometheus &> /dev/null
+  chown prometheus:prometheus /var/lib/prometheus &> /dev/null
+  if [ $LOG_LEVEL -gt 3 ]
+  then
+    ls /etc | grep prometheus | awk '{printf "Directories %s:\n", $1}'
+    ls -all /etc | grep prometheus
+    ls -all /var/lib/ | grep prometheus
+    echo
+  fi
 }
 
 
@@ -647,46 +656,9 @@ function stop_apps() {
 
 
 function get_status() {
-
-  systemctl >/dev/null 2>&1
-  if [ $? -eq 0 ]
-  then
-
-    if systemctl status node_exporter | grep 'failed' > /dev/null
-    then
-      printf "\nStatus of node_exporter: \n"
-      systemctl status node_exporter &
-      disown
-      sleep 0.5
-      kill "$!"
-      stty sane
-    else
-      systemctl status node_exporter | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
-    fi
-    echo
-
-
-    if systemctl status prometheus | grep 'failed' > /dev/null
-    then
-      printf "\nStatus of Prometheus: \n"
-      systemctl status prometheus &
-      disown
-      sleep 0.5
-      kill "$!"
-      stty sane
-    else
-      systemctl status prometheus | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
-    fi
-    echo
-
-  else
-
-    service node_exporter status | awk 'NR==1 {printf "Status of node_exporter: %s\n", $0}'
-    echo
-    service prometheus status | awk 'NR==1 {printf "Status of Prometheus: %s\n", $0}'
-    echo
-
-  fi
+  service node_exporter status | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
+  service prometheus status | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
+  echo
 }
 
 
@@ -730,6 +702,10 @@ function main() {
   if $EXECUTE; then
     start_apps
     sleep 1
+    if (! $STATUS_APPS); then get_status; fi
+  fi
+
+  if $STATUS_APPS; then
     get_status
   fi
 }
