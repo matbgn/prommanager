@@ -1,7 +1,9 @@
-14-MAR-2022: 1.1.0
+14-MAR-2022: 2.0.0
 - Add adaptative verbose mode (-vv for WARN, -vvv for INFO, -vvvv for DEBUG)
 - Improve versions retrieving
 - Check for argument when mandatory
+- Split display and retrieve options
+- Make get and display versions working with apps flags
 
 12-MAR-2022: 1.0.0
 - Rewrite option argument parsing

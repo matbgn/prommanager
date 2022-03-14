@@ -17,34 +17,28 @@ do
     eval "${line%=*}"="${line##*=}"
 done
 
+NODE_TRIGGER=false
+BLACKBOX_TRIGGER=false
+PROMETHEUS_TRIGGER=false
+ALERTMANAGER_TRIGGER=false
+
 DISPLAY_VERSIONS=false
-DISPLAY_NODE_EXPORTER=false
-DISPLAY_BLACKBOX_EXPORTER=false
-DISPLAY_PROMETHEUS=false
-DISPLAY_ALERTMANAGER=false
 
 UPDATE_VERSIONS=false
-UPDATE_NODE_EXPORTER=false
-UPDATE_BLACKBOX_EXPORTER=false
-UPDATE_PROMETHEUS=false
-UPDATE_ALERTMANAGER=false
 
 INSTALL=false
-
-EXECUTE=false
 
 NODE_EXPORTER_PORT=9500
 PROMETHEUS_PORT=9590
 
-NODE_TRIGGER=false # -> can be changed either by script argument -n or -N 1.1.2 or -b
-PROMETHEUS_TRIGGER=false # -> can be changed either by script argument -p or -P 2.27.1 or -b
+EXECUTE=false
 
 function usage {
         echo "Usage: $(basename "$0") [<flags>]" 2>&1
         echo '   -h, --help                          Show this help context'
         echo '   -v, --verbose                       Adaptative verbose mode (-vv for WARN, -vvv for INFO, -vvvv for full debugging)'
-        echo '   -V, --versions [all|<app>]          Display versions of all available apps (prometheus, node_exporter, etc.)'
-        echo '   --update-versions [all|<app>]       Retrieve and override versions numbers for selected apps (prometheus, node_exporter, etc.)'
+        echo '   -V, --versions [--<all|apps>]       Display versions of all available apps (prometheus, node_exporter, etc.)'
+        echo '   --update-versions [--<all|apps>]    Retrieve and override versions numbers for selected apps (prometheus, node_exporter, etc.)'
         echo '   -s, --status                        Prompt services status'
         echo '   --ports                             List all ports actually used'
         echo '   --arch arm64                        Set architecture, default is amd64'
@@ -53,8 +47,12 @@ function usage {
         echo '   --all                               Process script for all available apps (prometheus, node_exporter, etc.)'
         echo '   -n, --node                          Process for node_exporter'
         echo '   -N [<version>]                      Specify node_exporter version'
+        echo '   -b, --blackbox                      Process for blackbox_exporter'
+        echo '   -B [<version>]                      Specify blackbox_exporter version'
         echo '   -p, --prom                          Process for Prometheus'
         echo '   -P [<version>]                      Specify prometheus version'
+        echo '   -a, --alert                         Process for alertmanager'
+        echo '   -A [<version>]                      Specify alertmanager version'
         echo '   -k, --kill                          Stop daemons for both prometheus and node_exporter'
         echo '   --remove-all                        Remove all data, users and services'
         echo '   --offline                           For debug purpose only'
@@ -86,64 +84,12 @@ function flags() {
         shift # argument
         ;;
       -V|--versions)
-        check_options_mandatory "$2"
-        DISPLAY_VERSIONS_SELECTION="$2"
         DISPLAY_VERSIONS=true
         shift # argument
-        shift # value
-        if [ "$DISPLAY_VERSIONS_SELECTION" == "all" ]
-        then
-          DISPLAY_NODE_EXPORTER=true
-          DISPLAY_BLACKBOX_EXPORTER=true
-          DISPLAY_PROMETHEUS=true
-          DISPLAY_ALERTMANAGER=true
-        fi
-        if [ "$DISPLAY_VERSIONS_SELECTION" == "node" ]
-        then
-          DISPLAY_NODE_EXPORTER=true
-        fi
-        if [ "$DISPLAY_VERSIONS_SELECTION" == "blackbox" ]
-        then
-          DISPLAY_BLACKBOX_EXPORTER=true
-        fi
-        if [ "$DISPLAY_VERSIONS_SELECTION" == "prom" ]
-        then
-          DISPLAY_PROMETHEUS=true
-        fi
-        if [ "$DISPLAY_VERSIONS_SELECTION" == "alert" ]
-        then
-          DISPLAY_ALERTMANAGER=true
-        fi
         ;;
-      -U|--update-versions)
-        check_options_mandatory "$2"
-        UPDATE_VERSIONS_SELECTION="$2"
+      --update-versions)
         UPDATE_VERSIONS=true
         shift # argument
-        shift # value
-        if [ "$UPDATE_VERSIONS_SELECTION" == "all" ]
-        then
-          UPDATE_NODE_EXPORTER=true
-          UPDATE_BLACKBOX_EXPORTER=true
-          UPDATE_PROMETHEUS=true
-          UPDATE_ALERTMANAGER=true
-        fi
-        if [ "$UPDATE_VERSIONS_SELECTION" == "node" ]
-        then
-          UPDATE_NODE_EXPORTER=true
-        fi
-        if [ "$UPDATE_VERSIONS_SELECTION" == "blackbox" ]
-        then
-          UPDATE_BLACKBOX_EXPORTER=true
-        fi
-        if [ "$UPDATE_VERSIONS_SELECTION" == "prom" ]
-        then
-          UPDATE_PROMETHEUS=true
-        fi
-        if [ "$UPDATE_VERSIONS_SELECTION" == "alert" ]
-        then
-          UPDATE_ALERTMANAGER=true
-        fi
         ;;
       -s|--status)
         get_status
@@ -169,7 +115,9 @@ function flags() {
         ;;
       --all)
         NODE_TRIGGER=true
+        BLACKBOX_TRIGGER=true
         PROMETHEUS_TRIGGER=true
+        ALERTMANAGER_TRIGGER=true
         shift # argument
         ;;
       -n|--node)
@@ -183,6 +131,17 @@ function flags() {
         shift # argument
         shift # value
         ;;
+      -b|--blackbox)
+        BLACKBOX_TRIGGER=true
+        shift # argument
+        ;;
+      -B)
+        check_options_mandatory "$2"
+        BLACKBOX_EXPORTER_VERSION="$2"
+        BLACKBOX_TRIGGER=true
+        shift # argument
+        shift # value
+        ;;
       -p|--prom)
         PROMETHEUS_TRIGGER=true
         shift # argument
@@ -191,6 +150,17 @@ function flags() {
         check_options_mandatory "$2"
         PROMETHEUS_VERSION="$2"
         PROMETHEUS_TRIGGER=true
+        shift # argument
+        shift # value
+        ;;
+      -a|--alert)
+        ALERTMANAGER_TRIGGER=true
+        shift # argument
+        ;;
+      -A)
+        check_options_mandatory "$2"
+        ALERTMANAGER_VERSION="$2"
+        ALERTMANAGER_TRIGGER=true
         shift # argument
         shift # value
         ;;
@@ -370,25 +340,25 @@ function retrieve_alertmanager_version() {
 
 function ensure_versions() {
   # Test if file is correctly filled or if update is request
-  if [ "${#NODE_EXPORTER_VERSION}" -lt 5 ] || $UPDATE_NODE_EXPORTER
+  if [ "${#NODE_EXPORTER_VERSION}" -lt 5 ] || $NODE_TRIGGER
   then
     retrieve_node_version
     NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#BLACKBOX_EXPORTER_VERSION}" -lt 5 ] || $UPDATE_BLACKBOX_EXPORTER
+  if [ "${#BLACKBOX_EXPORTER_VERSION}" -lt 5 ] || $BLACKBOX_TRIGGER
   then
     retrieve_blackbox_version
     BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || $UPDATE_PROMETHEUS
+  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || $PROMETHEUS_TRIGGER
   then
     retrieve_prometheus_version
     PROMETHEUS_VERSION=$PROMETHEUS_VERSION_CURLED
   fi
 
-  if [ "${#ALERTMANAGER_VERSION}" -lt 5 ] || $UPDATE_ALERTMANAGER
+  if [ "${#ALERTMANAGER_VERSION}" -lt 5 ] || $ALERTMANAGER_TRIGGER
   then
     retrieve_alertmanager_version
     ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION_CURLED
@@ -496,10 +466,10 @@ function display_alertmanager_versions() {
 
 
 function display_versions() {
-  if $DISPLAY_NODE_EXPORTER; then display_node_versions; fi
-  if $DISPLAY_BLACKBOX_EXPORTER; then display_blackbox_versions; fi
-  if $DISPLAY_PROMETHEUS; then display_prometheus_versions; fi
-  if $DISPLAY_ALERTMANAGER; then display_alertmanager_versions; fi
+  if $NODE_TRIGGER; then display_node_versions; fi
+  if $BLACKBOX_TRIGGER; then display_blackbox_versions; fi
+  if $PROMETHEUS_TRIGGER; then display_prometheus_versions; fi
+  if $ALERTMANAGER_TRIGGER; then display_alertmanager_versions; fi
 }
 
 
