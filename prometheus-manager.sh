@@ -27,13 +27,14 @@ DISPLAY_VERSIONS=false
 UPDATE_VERSIONS=false
 
 INSTALL=false
-
 NODE_EXPORTER_PORT=9500
 PROMETHEUS_PORT=9590
 
 EXECUTE=false
 KILL_APPS=false
 STATUS_APPS=false
+
+REMOVE_APPS=false
 
 function usage {
         echo "Usage: $(basename "$0") [<flags>]" 2>&1
@@ -45,7 +46,7 @@ function usage {
         echo '   -E, --exec [--<all|apps>]           Execute services combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   -S, --status [--<all|apps>]         Prompt services status combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   -K, --kill [--<all|apps>]           Stop daemons combined with corresponding params e.g. --all|--node|--prom|...'
-        echo '   --remove-all                        Remove all data, users and services'
+        echo '   --remove [--<all|apps>]             Remove all data, users and services combined with corresponding params e.g. --all|--node|--prom|...'
         echo '   --all                               Process script for all available apps (prometheus, node_exporter, etc.)'
         echo '   -n, --node                          Process for node_exporter'
         echo '   -N [<version>]                      Specify node_exporter version'
@@ -109,6 +110,11 @@ function flags() {
         KILL_APPS=true
         shift # argument
         ;;
+      --remove)
+        KILL_APPS=true
+        REMOVE_APPS=true
+        shift # argument
+        ;;
       --all)
         NODE_TRIGGER=true
         BLACKBOX_TRIGGER=true
@@ -159,45 +165,6 @@ function flags() {
         ALERTMANAGER_TRIGGER=true
         shift # argument
         shift # value
-        ;;
-      --remove-all)
-        systemctl >/dev/null 2>&1
-        # shellcheck disable=SC2181
-        if [ $? -eq 0 ]
-        then
-          systemctl stop node_exporter
-          systemctl stop prometheus
-        else
-          service node_exporter stop
-          service prometheus stop
-        fi
-        sleep 1
-        rm /usr/local/bin/node_exporter
-        rm /usr/local/bin/prometheus
-        rm /usr/local/bin/promtool
-        rm -rf /etc/prometheus
-        rm -rf /var/lib/prometheus/
-
-        deluser --remove-home node_exporter
-        deluser --remove-home prometheus
-
-        systemctl >/dev/null 2>&1
-        # shellcheck disable=SC2181
-        if [ $? -eq 0 ]
-        then
-          rm /etc/systemd/system/node_exporter.service
-          rm /etc/systemd/system/prometheus.service
-          systemctl daemon-reload
-        else
-          rm /etc/init.d/node_exporter
-          rm /etc/default/node_exporter
-          rm /etc/init.d/prometheus
-          rm /etc/default/prometheus
-          update-rc.d node_exporter remove
-          update-rc.d prometheus remove
-        fi
-
-        exit 1
         ;;
       --list-ports)
         list_used_ports
@@ -675,6 +642,53 @@ function get_status() {
 }
 
 
+function remove_node_exporter() {
+  rm /usr/local/bin/node_exporter
+
+  deluser --remove-home node_exporter
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+    rm /etc/systemd/system/node_exporter.service
+    systemctl daemon-reload
+  else
+    rm /etc/init.d/node_exporter
+    rm /etc/default/node_exporter
+    update-rc.d node_exporter remove
+  fi
+}
+
+
+function remove_prometheus() {
+  rm /usr/local/bin/prometheus
+  rm /usr/local/bin/promtool
+  rm -rf /etc/prometheus
+  rm -rf /var/lib/prometheus/
+
+  deluser --remove-home prometheus
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+    rm /etc/systemd/system/prometheus.service
+    systemctl daemon-reload
+  else
+    rm /etc/init.d/prometheus
+    rm /etc/default/prometheus
+    update-rc.d prometheus remove
+  fi
+}
+
+
+function remove_apps() {
+  if $NODE_TRIGGER; then remove_node_exporter; fi
+  if $PROMETHEUS_TRIGGER; then remove_prometheus; fi
+}
+
+
 function list_used_ports() {
   if ! command -v lsof &> /dev/null
   then
@@ -696,8 +710,11 @@ function main() {
   if $KILL_APPS; then
     stop_apps
     sleep 1
-    get_status
-    exit 1
+    if (! $STATUS_APPS); then get_status; fi
+  fi
+
+  if $REMOVE_APPS; then
+    remove_apps
   fi
 
   if $UPDATE_VERSIONS; then
