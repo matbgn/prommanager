@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v2.0.1!"
+MODT="Welcome to Prometheus manager v2.1.0!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -494,6 +494,28 @@ function install_node_exporter() {
   download_node_exporter
   init_node_exporter
   if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] node_exporter installed'; fi
+}
+
+
+function download_blackbox_exporter() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Download blackbox_exporter\n"; fi
+  useradd --no-create-home --shell /bin/false blackbox_exporter &> /dev/null || grep blackbox_exporter /etc/passwd
+  test -f blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION".linux-"$SYSTEM_ARCH".tar.gz ||
+  curl -OL https://github.com/prometheus/blackbox_exporter/releases/download/v"$BLACKBOX_EXPORTER_VERSION"/blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION".linux-"$SYSTEM_ARCH".tar.gz
+  echo
+
+  tar xfz blackbox_exporter-*.tar.gz &> /dev/null
+  cp blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/blackbox_exporter /usr/local/bin
+  chown blackbox_exporter:blackbox_exporter /usr/local/bin/blackbox_exporter
+
+  if [ $LOG_LEVEL -lt 3 ]; then rm -rf blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION"*; fi
+}
+
+
+function install_blackbox_exporter() {
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting blackbox_exporter installation'; fi
+  download_blackbox_exporter
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] blackbox_exporter installed'; fi
 }
 
 

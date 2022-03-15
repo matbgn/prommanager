@@ -1,6 +1,7 @@
-# 2.0.1
+# 2.1.0
 - Ensure version numbers are present on fresh install
 - Update corresponding command on README.md
+- Add blackbox_exporter for installation
 
 # 2.0.0
 - Add an adaptative verbose mode (-vv for WARN, -vvv for INFO, -vvvv for DEBUG)
