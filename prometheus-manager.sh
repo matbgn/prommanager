@@ -312,25 +312,25 @@ function retrieve_prometheus_version() {
 
 function ensure_versions() {
   # Test if file is correctly filled or if update is request
-  if [ "${#NODE_EXPORTER_VERSION}" -lt 5 ] || $NODE_TRIGGER
+  if [ "${#NODE_EXPORTER_VERSION}" -lt 5 ] || ($NODE_TRIGGER && $UPDATE_VERSIONS)
   then
     retrieve_node_version
     NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#BLACKBOX_EXPORTER_VERSION}" -lt 5 ] || $BLACKBOX_TRIGGER
+  if [ "${#BLACKBOX_EXPORTER_VERSION}" -lt 5 ] || ($BLACKBOX_TRIGGER && $UPDATE_VERSIONS)
   then
     retrieve_blackbox_version
     BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#ALERTMANAGER_VERSION}" -lt 5 ] || $ALERTMANAGER_TRIGGER
+  if [ "${#ALERTMANAGER_VERSION}" -lt 5 ] || ($ALERTMANAGER_TRIGGER && $UPDATE_VERSIONS)
   then
     retrieve_alertmanager_version
     ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION_CURLED
   fi
 
-  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || $PROMETHEUS_TRIGGER
+  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || ($PROMETHEUS_TRIGGER && $UPDATE_VERSIONS)
   then
     retrieve_prometheus_version
     PROMETHEUS_VERSION=$PROMETHEUS_VERSION_CURLED
@@ -715,7 +715,7 @@ function install_alertmanager() {
   config_alertmanager
   config_alert_rules
   init_alertmanager
-  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] alertmanager installed'; fi
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Alertmanager installed'; fi
 }
 
 
