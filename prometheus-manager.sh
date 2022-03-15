@@ -19,8 +19,8 @@ done
 
 NODE_TRIGGER=false
 BLACKBOX_TRIGGER=false
-PROMETHEUS_TRIGGER=false
 ALERTMANAGER_TRIGGER=false
+PROMETHEUS_TRIGGER=false
 
 DISPLAY_VERSIONS=false
 
@@ -29,8 +29,8 @@ UPDATE_VERSIONS=false
 INSTALL=false
 NODE_EXPORTER_PORT=9500
 BLACKBOX_EXPORTER_PORT=9510
+ALERTMANAGER_PORT=9550
 PROMETHEUS_PORT=9590
-ALERTMANAGER_PORT=9599
 
 BLACKBOX_URL_TO_PROBE="example.com, http://192.247.247.15:1880/"
 
@@ -62,10 +62,10 @@ function usage {
         echo '   -N [<version>]                      Specify node_exporter version'
         echo '   -b, --blackbox                      Process for blackbox_exporter'
         echo '   -B [<version>]                      Specify blackbox_exporter version'
-        echo '   -p, --prom                          Process for Prometheus'
-        echo '   -P [<version>]                      Specify prometheus version'
         echo '   -a, --alert                         Process for alertmanager'
         echo '   -A [<version>]                      Specify alertmanager version'
+        echo '   -p, --prom                          Process for Prometheus'
+        echo '   -P [<version>]                      Specify prometheus version'
         echo '   --list-ports                        List all ports actually used'
         echo '   --arch arm64                        Set architecture, default is amd64'
         echo '   --offline                           For debug purpose only'
@@ -154,17 +154,6 @@ function flags() {
         shift # argument
         shift # value
         ;;
-      -p|--prom)
-        PROMETHEUS_TRIGGER=true
-        shift # argument
-        ;;
-      -P)
-        check_options_mandatory "$2"
-        PROMETHEUS_VERSION="$2"
-        PROMETHEUS_TRIGGER=true
-        shift # argument
-        shift # value
-        ;;
       -a|--alert)
         ALERTMANAGER_TRIGGER=true
         shift # argument
@@ -173,6 +162,17 @@ function flags() {
         check_options_mandatory "$2"
         ALERTMANAGER_VERSION="$2"
         ALERTMANAGER_TRIGGER=true
+        shift # argument
+        shift # value
+        ;;
+      -p|--prom)
+        PROMETHEUS_TRIGGER=true
+        shift # argument
+        ;;
+      -P)
+        check_options_mandatory "$2"
+        PROMETHEUS_VERSION="$2"
+        PROMETHEUS_TRIGGER=true
         shift # argument
         shift # value
         ;;
@@ -268,27 +268,6 @@ function retrieve_blackbox_version() {
 }
 
 
-function retrieve_prometheus_version() {
-    if [ $LOG_LEVEL -gt 3 ]
-    then
-      echo '[DEBUG] Retrieving prometheus version...'
-    fi
-    PROMETHEUS_VERSION_CURLED="$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest |
-    grep 'tag_name' | awk '{printf substr($2, 3, length($2)-4)}')"
-
-    if [[ -z $PROMETHEUS_VERSION_CURLED ]]
-    then
-      echo '[ERROR] System was not able to retrieve prometheus version check your internet connection'
-      exit 1
-    fi
-
-    if [ $LOG_LEVEL -gt 2 ]
-    then
-      echo "[INFO] prometheus version retrieved: " "$PROMETHEUS_VERSION_CURLED"
-    fi
-}
-
-
 function retrieve_alertmanager_version() {
     if [ $LOG_LEVEL -gt 3 ]
     then
@@ -310,6 +289,27 @@ function retrieve_alertmanager_version() {
 }
 
 
+function retrieve_prometheus_version() {
+    if [ $LOG_LEVEL -gt 3 ]
+    then
+      echo '[DEBUG] Retrieving prometheus version...'
+    fi
+    PROMETHEUS_VERSION_CURLED="$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest |
+    grep 'tag_name' | awk '{printf substr($2, 3, length($2)-4)}')"
+
+    if [[ -z $PROMETHEUS_VERSION_CURLED ]]
+    then
+      echo '[ERROR] System was not able to retrieve prometheus version check your internet connection'
+      exit 1
+    fi
+
+    if [ $LOG_LEVEL -gt 2 ]
+    then
+      echo "[INFO] prometheus version retrieved: " "$PROMETHEUS_VERSION_CURLED"
+    fi
+}
+
+
 function ensure_versions() {
   # Test if file is correctly filled or if update is request
   if [ "${#NODE_EXPORTER_VERSION}" -lt 5 ] || $NODE_TRIGGER
@@ -324,16 +324,16 @@ function ensure_versions() {
     BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || $PROMETHEUS_TRIGGER
-  then
-    retrieve_prometheus_version
-    PROMETHEUS_VERSION=$PROMETHEUS_VERSION_CURLED
-  fi
-
   if [ "${#ALERTMANAGER_VERSION}" -lt 5 ] || $ALERTMANAGER_TRIGGER
   then
     retrieve_alertmanager_version
     ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION_CURLED
+  fi
+
+  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || $PROMETHEUS_TRIGGER
+  then
+    retrieve_prometheus_version
+    PROMETHEUS_VERSION=$PROMETHEUS_VERSION_CURLED
   fi
 }
 
@@ -343,8 +343,8 @@ function store_actual_versions() {
   cat > .versions << EOM
 NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION
 BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION
-PROMETHEUS_VERSION=$PROMETHEUS_VERSION
 ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION
+PROMETHEUS_VERSION=$PROMETHEUS_VERSION
 EOM
 
   chmod 666 .versions
@@ -396,6 +396,25 @@ function display_blackbox_versions() {
 }
 
 
+function display_alertmanager_versions() {
+  if $DEBUG_OFFLINE; then ALERTMANAGER_VERSION_CURLED=""; else retrieve_alertmanager_version; fi
+  if [ -z "$ALERTMANAGER_VERSION_CURLED" ]
+  then
+    ALERTMANAGER_VERSION_CURLED="You're offline"
+  fi
+  printf "Highest available version for alertmanager is: %s\n" "$ALERTMANAGER_VERSION_CURLED"
+
+  printf "Installation version for alertmanager will be: %s\n" "$ALERTMANAGER_VERSION"
+
+  INSTALLED_ALERTMANAGER_VERSION=$(/usr/local/bin/alertmanager --version 2>&1 | awk 'NR==1 {printf $3}')
+  if [ "${#INSTALLED_ALERTMANAGER_VERSION}" -lt 5 ]
+  then
+    INSTALLED_ALERTMANAGER_VERSION="Not installed"
+  fi
+  printf "Actual version of alertmanager is: %s\n\n" "$INSTALLED_ALERTMANAGER_VERSION"
+}
+
+
 function display_prometheus_versions() {
   if $DEBUG_OFFLINE; then PROMETHEUS_VERSION_CURLED=""; else retrieve_prometheus_version; fi
   if [ -z "$PROMETHEUS_VERSION_CURLED" ]
@@ -416,30 +435,11 @@ function display_prometheus_versions() {
 }
 
 
-function display_alertmanager_versions() {
-  if $DEBUG_OFFLINE; then ALERTMANAGER_VERSION_CURLED=""; else retrieve_alertmanager_version; fi
-  if [ -z "$ALERTMANAGER_VERSION_CURLED" ]
-  then
-    ALERTMANAGER_VERSION_CURLED="You're offline"
-  fi
-  printf "Highest available version for alertmanager is: %s\n" "$ALERTMANAGER_VERSION_CURLED"
-
-  printf "Installation version for alertmanager will be: %s\n" "$ALERTMANAGER_VERSION"
-
-  INSTALLED_ALERTMANAGER_VERSION=$(/usr/local/bin/alertmanager --version 2>&1 | awk 'NR==1 {printf $3}')
-  if [ "${#INSTALLED_ALERTMANAGER_VERSION}" -lt 5 ]
-  then
-    INSTALLED_ALERTMANAGER_VERSION="Not installed"
-  fi
-  printf "Actual version of alertmanager is: %s\n\n" "$INSTALLED_ALERTMANAGER_VERSION"
-}
-
-
 function display_versions() {
   if $NODE_TRIGGER; then display_node_versions; fi
   if $BLACKBOX_TRIGGER; then display_blackbox_versions; fi
-  if $PROMETHEUS_TRIGGER; then display_prometheus_versions; fi
   if $ALERTMANAGER_TRIGGER; then display_alertmanager_versions; fi
+  if $PROMETHEUS_TRIGGER; then display_prometheus_versions; fi
 }
 
 
@@ -583,6 +583,141 @@ function install_blackbox_exporter() {
 }
 
 
+function download_alertmanager() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Download Alertmanager\n"; fi
+  useradd --no-create-home --shell /bin/false alertmanager &> /dev/null || grep alertmanager /etc/passwd
+  test -f alertmanager-"$ALERTMANAGER_VERSION".linux-"$SYSTEM_ARCH".tar.gz ||
+  curl -OL https://github.com/prometheus/alertmanager/releases/download/v"$ALERTMANAGER_VERSION"/alertmanager-"$ALERTMANAGER_VERSION".linux-"$SYSTEM_ARCH".tar.gz
+  echo
+
+  tar xfz alertmanager-*.tar.gz &> /dev/null
+  cp alertmanager-"$ALERTMANAGER_VERSION".linux-"$SYSTEM_ARCH"/alertmanager /usr/local/bin
+  chown alertmanager:alertmanager /usr/local/bin/alertmanager
+
+  mkdir /etc/prometheus &> /dev/null
+
+  if [ $LOG_LEVEL -lt 3 ]; then rm -rf alertmanager-"$ALERTMANAGER_VERSION"*; fi
+}
+
+
+function config_alertmanager() {
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Config Alertmanager\n"; fi
+
+  cat > /etc/prometheus/alertmanager.yml <<EOM
+global:
+  smtp_from: server@bgn.ch
+  smtp_smarthost: ssl0.ovh.net:587
+  smtp_auth_username: server@bgn.ch
+  smtp_auth_password: QMj7N56iKrdZDX5iP3AX
+route:
+  group_by: ['alertname']
+  # How long to initially wait to send a notification for a group
+  # of alerts. Allows to wait for an inhibiting alert to arrive or collect
+  # more initial alerts for the same group. (Usually ~0s to few minutes.)
+  group_wait: 3s
+  # How long to wait before sending a notification about new alerts that
+  # are added to a group of alerts for which an initial notification has
+  # already been sent. (Usually ~5m or more.)
+  group_interval: 5s
+  # How long to wait before sending a notification again if it has already
+  # been sent successfully for an alert. (Usually ~3h or more).
+  repeat_interval: 1h
+  receiver: 'alert.services'
+receivers:
+- name: 'alert.services'
+  email_configs:
+    - to: 'it.testcse@bqn.ch'
+  webhook_configs:
+    - url: 'https://telepush.dev/api/inlets/alertmanager/84c328'
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']
+EOM
+}
+
+
+function config_alert_rules() {
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Config Alert Rules\n"; fi
+
+  cat > /etc/prometheus/alert.rules.yml <<EOM
+groups:
+- name: alert.rules
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Endpoint {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."
+
+
+  - alert: HttpProbeFailure
+    expr: probe_http_status_code <= 199 OR probe_http_status_code >= 400
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: HTTP connectivity failure (instance {{ $labels.instance }})
+      description: "HTTP status code is not 200-399\nVALUE = {{ $value }}\nLABELS = {{ $labels }}"
+EOM
+}
+
+
+function init_alertmanager() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Setting Alertmanager daemon\n"; fi
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+
+    cat > /etc/systemd/system/alertmanager.service <<EOM
+[Unit]
+Description=Prometheus Altermanager
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=alertmanager
+Group=alertmanager
+Type=simple
+ExecStart=/usr/local/bin/alertmanager \
+  --config.file /etc/prometheus/alertmanager.yml \
+  --web.listen-address=:${ALERTMANAGER_PORT}
+
+[Install]
+WantedBy=multi-user.target
+EOM
+
+
+    systemctl daemon-reload
+    systemctl enable alertmanager
+  else
+    update-rc.d alertmanager defaults
+    if [ $? -ne 0 ]
+    then
+      printf "You have to install alertmanager daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
+      printf "$ pleaserun --user alertmanager --group alertmanager \\\n--install /usr/local/bin/alertmanager --config.file /etc/prometheus/alertmanager.yml\\\n--web.listen-address=:%s\n\n" "$ALERTMANAGER_PORT"
+    fi
+  fi
+}
+
+
+function install_alertmanager() {
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting alertmanager installation'; fi
+  download_alertmanager
+  config_alertmanager
+  config_alert_rules
+  init_alertmanager
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] alertmanager installed'; fi
+}
+
+
 function set_prometheus_folders() {
   mkdir /etc/prometheus &> /dev/null
   mkdir /var/lib/prometheus &> /dev/null
@@ -689,6 +824,7 @@ function init_prometheus() {
   ExecStart=/usr/local/bin/prometheus \
   --config.file /etc/prometheus/prometheus.yml \
   --storage.tsdb.path /var/lib/prometheus/ \
+  --storage.tsdb.no-lockfile \
   --web.console.templates=/etc/prometheus/consoles \
   --web.console.libraries=/etc/prometheus/console_libraries \
   --web.listen-address=:${PROMETHEUS_PORT}
@@ -705,7 +841,7 @@ EOM
     if [ $? -ne 0 ]
     then
       printf "You have to install and start prometheus daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
-      printf "$ pleaserun --user prometheus --group prometheus --install /usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --web.console.templates=/etc/prometheus/consoles --web.console.libraries=/etc/prometheus/console_libraries --web.listen-address=:%s\n\n" "$PROMETHEUS_PORT"
+      printf "$ pleaserun --user prometheus --group prometheus --install /usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --storage.tsdb.no-lockfile --web.console.templates=/etc/prometheus/consoles --web.console.libraries=/etc/prometheus/console_libraries --web.listen-address=:%s\n\n" "$PROMETHEUS_PORT"
     fi
   fi
 }
@@ -723,6 +859,7 @@ function install_prometheus() {
 function install_apps() {
   if $NODE_TRIGGER; then install_node_exporter; fi
   if $BLACKBOX_TRIGGER; then install_blackbox_exporter; fi
+  if $ALERTMANAGER_TRIGGER; then install_alertmanager; fi
   if $PROMETHEUS_TRIGGER; then install_prometheus; fi
 }
 
@@ -730,6 +867,7 @@ function install_apps() {
 function start_apps() {
   if $NODE_TRIGGER; then service node_exporter start; fi
   if $BLACKBOX_TRIGGER; then service blackbox_exporter start; fi
+  if $ALERTMANAGER_TRIGGER; then service alertmanager start; fi
   if $PROMETHEUS_TRIGGER; then service prometheus start; fi
 }
 
@@ -737,6 +875,7 @@ function start_apps() {
 function stop_apps() {
   if $NODE_TRIGGER; then service node_exporter stop; fi
   if $BLACKBOX_TRIGGER; then service blackbox_exporter stop; fi
+  if $ALERTMANAGER_TRIGGER; then service alertmanager stop; fi
   if $PROMETHEUS_TRIGGER; then service prometheus stop; fi
 }
 
@@ -745,8 +884,14 @@ function get_node_status() {
   service node_exporter status | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
 }
 
+
 function get_blackbox_status() {
   service blackbox_exporter status | awk 'NR==3 {printf "Status of blackbox_exporter: %s\n", $2}'
+}
+
+
+function get_alertmanager_status() {
+  service alertmanager status | awk 'NR==3 {printf "Status of Alertmanager: %s\n", $2}'
 }
 
 
@@ -758,6 +903,7 @@ function get_prometheus_status() {
 function get_status() {
   if $NODE_TRIGGER; then get_node_status; fi
   if $BLACKBOX_TRIGGER; then get_blackbox_status; fi
+  if $ALERTMANAGER_TRIGGER; then get_alertmanager_status; fi
   if $PROMETHEUS_TRIGGER; then get_prometheus_status; fi
   echo
 }
@@ -801,6 +947,25 @@ function remove_blackbox_exporter() {
 }
 
 
+function remove_alertmanager() {
+  rm /usr/local/bin/alertmanager
+
+  deluser --remove-home alertmanager
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+    rm /etc/systemd/system/alertmanager.service
+    systemctl daemon-reload
+  else
+    rm /etc/init.d/alertmanager
+    rm /etc/default/alertmanager
+    update-rc.d alertmanager remove
+  fi
+}
+
+
 function remove_prometheus() {
   rm /usr/local/bin/prometheus
   rm /usr/local/bin/promtool
@@ -826,6 +991,7 @@ function remove_prometheus() {
 function remove_apps() {
   if $NODE_TRIGGER; then remove_node_exporter; fi
   if $BLACKBOX_TRIGGER; then remove_blackbox_exporter; fi
+  if $ALERTMANAGER_TRIGGER; then remove_alertmanager; fi
   if $PROMETHEUS_TRIGGER; then remove_prometheus; fi
 }
 

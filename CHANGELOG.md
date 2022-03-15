@@ -4,6 +4,8 @@
 - Add blackbox_exporter
 - Set ipv4 as preferred protocol for blackbox_exporter
 - Add sample list of URL to be watched
+- Add Alertmanager
+- Split config and init for further developments
 - [WARNING] Breaking changes argument for install, exec, kill, status switched to lowercase for single letter
 
 # 2.0.0
