@@ -1,4 +1,8 @@
-14-MAR-2022: 2.0.0
+# 2.0.1
+- Ensure version numbers are present on fresh install
+- Update corresponding command on README.md
+
+# 2.0.0
 - Add an adaptative verbose mode (-vv for WARN, -vvv for INFO, -vvvv for DEBUG)
 - Improve versions retrieving
 - Check for argument when mandatory
@@ -8,7 +12,7 @@
 - Retrieve status for each app independently via parameter
 - Add possibility to remove apps independently of each other
 
-12-MAR-2022: 1.0.0
+# 1.0.0
 - Rewrite option argument parsing
 - [WARNING] Breaking changes for script arguments
 - Use lsof in favour of netstat for listening open ports
