@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v2.1.2!"
+MODT="Welcome to Prometheus manager v2.1.3!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -515,6 +515,10 @@ function download_blackbox_exporter() {
   tar xfz blackbox_exporter-*.tar.gz &> /dev/null
   cp blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/blackbox_exporter /usr/local/bin
   chown blackbox_exporter:blackbox_exporter /usr/local/bin/blackbox_exporter
+
+  mkdir /etc/prometheus &> /dev/null
+  cp blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/blackbox.yml /etc/prometheus/
+  chown blackbox_exporter:blackbox_exporter /etc/prometheus/blackbox.yml
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION"*; fi
 }
