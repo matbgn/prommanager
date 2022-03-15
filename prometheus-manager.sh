@@ -25,6 +25,7 @@ PROMETHEUS_TRIGGER=false
 DISPLAY_VERSIONS=false
 
 UPDATE_VERSIONS=false
+UPDATE_CONFIGS=false
 
 INSTALL=false
 NODE_EXPORTER_PORT=9500
@@ -72,6 +73,8 @@ function usage {
         echo '                                       (see arguments below)'
         echo '   --update-versions [--<all|apps>]    Retrieve last version numbers available'
         echo '                                       for selected apps'
+        echo '   --update-config [--<all|apps>]      Overwrite config files based on .env'
+        echo '                                       file for selected apps (need restart)'
         echo '   -i, --install [--<all|apps>]        Install selected apps'
         echo '   -e, --exec [--<all|apps>]           Execute selected apps'
         echo '   -s, --status [--<all|apps>]         Prompt selected apps status'
@@ -124,6 +127,10 @@ function flags() {
         ;;
       --update-versions)
         UPDATE_VERSIONS=true
+        shift # argument
+        ;;
+      --update-config)
+        UPDATE_CONFIGS=true
         shift # argument
         ;;
       -i|--install)
@@ -837,6 +844,8 @@ scrape_configs:
     - target_label: __address__
       replacement: 127.0.0.1:${BLACKBOX_EXPORTER_PORT}
 EOM
+
+  chown prometheus:prometheus /etc/prometheus/prometheus.yml &> /dev/null
 }
 
 
@@ -1062,6 +1071,11 @@ function main() {
   fi
 
   update_versions
+
+  if $UPDATE_CONFIGS; then
+    config_alertmanager
+    config_prometheus
+  fi
 
   if $DISPLAY_VERSIONS; then
     display_versions
