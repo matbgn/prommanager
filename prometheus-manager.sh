@@ -554,6 +554,7 @@ Group=blackbox_exporter
 Type=simple
 ExecStart=/usr/local/bin/blackbox_exporter \
   --config.file /etc/prometheus/blackbox.yml \
+  --cluster.listen-address= \
   --web.listen-address=:${BLACKBOX_EXPORTER_PORT}
 
 [Install]
