@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v2.1.4!"
+MODT="Welcome to Prometheus manager v3.0.0!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -48,10 +48,10 @@ function usage {
         echo '                                       (see arguments below)'
         echo '   --update-versions [--<all|apps>]    Retrieve last version numbers available'
         echo '                                       for selected apps'
-        echo '   -I, --install [--<all|apps>]        Install selected apps'
-        echo '   -E, --exec [--<all|apps>]           Execute selected apps'
-        echo '   -S, --status [--<all|apps>]         Prompt selected apps status'
-        echo '   -K, --kill [--<all|apps>]           Stop selected apps daemons'
+        echo '   -i, --install [--<all|apps>]        Install selected apps'
+        echo '   -e, --exec [--<all|apps>]           Execute selected apps'
+        echo '   -s, --status [--<all|apps>]         Prompt selected apps status'
+        echo '   -k, --kill [--<all|apps>]           Stop selected apps daemons'
         echo '   --remove [--<all|apps>]             Remove all data, users and services for'
         echo '                                       selected apps'
         echo '   --all                               Process script for all available apps'
@@ -102,19 +102,19 @@ function flags() {
         UPDATE_VERSIONS=true
         shift # argument
         ;;
-      -I|--install)
+      -i|--install)
         INSTALL=true
         shift # argument
         ;;
-      -E|--exec)
+      -e|--exec)
         EXECUTE=true
         shift # argument
         ;;
-      -S|--status)
+      -s|--status)
         STATUS_APPS=true
         shift # argument
         ;;
-      -K|--kill)
+      -k|--kill)
         KILL_APPS=true
         shift # argument
         ;;

@@ -6,12 +6,12 @@ Manager to install, update, init Prometheus and node_exporter.
 ## Installation
     curl -OL https://raw.githubusercontent.com/matbgn/prometheus-manager/master/prometheus-manager.sh
     chmod +x prometheus-manager.sh
-    ./prometheus-manager.sh -V
+    ./prometheus-manager.sh -h
 
 ## Usage
 Get helper by running this command:
 
-    sudo ./prometheus-manager.sh -h
+    sudo ./prometheus-manager.sh --help
 
 ## OS Architecture
 Specify which one you want with (default is amd64):
