@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v2.1.1!"
+MODT="Welcome to Prometheus manager v2.1.2!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -28,7 +28,9 @@ UPDATE_VERSIONS=false
 
 INSTALL=false
 NODE_EXPORTER_PORT=9500
+BLACKBOX_EXPORTER_PORT=9510
 PROMETHEUS_PORT=9590
+ALERTMANAGER_PORT=9599
 
 EXECUTE=false
 KILL_APPS=false
@@ -489,7 +491,7 @@ EOM
     if [ $? -ne 0 ]
     then
       printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
-      printf "$ pleaserun --user node_exporter --group node_exporter --install /usr/local/bin/node_exporter --collector.processes --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
+      printf "$ pleaserun --user node_exporter --group node_exporter \\\n--install /usr/local/bin/node_exporter --collector.systemd \\\n--collector.processes --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
     fi
   fi
 }
@@ -518,9 +520,49 @@ function download_blackbox_exporter() {
 }
 
 
+function init_blackbox_exporter() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Setting blackbox_exporter daemon\n"; fi
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+
+    cat > /etc/systemd/system/blackbox_exporter.service <<EOM
+[Unit]
+Description=Blackbox Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=blackbox_exporter
+Group=blackbox_exporter
+Type=simple
+ExecStart=/usr/local/bin/blackbox_exporter \
+  --web.listen-address=:${BLACKBOX_EXPORTER_PORT}
+
+[Install]
+WantedBy=multi-user.target
+EOM
+
+
+    systemctl daemon-reload
+    systemctl enable blackbox_exporter
+  else
+    update-rc.d blackbox_exporter defaults
+    if [ $? -ne 0 ]
+    then
+      printf "You have to install blackbox_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
+      printf "$ pleaserun --user blackbox_exporter --group blackbox_exporter \\\n--install /usr/local/bin/blackbox_exporter --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
+    fi
+  fi
+}
+
+
 function install_blackbox_exporter() {
   if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting blackbox_exporter installation'; fi
   download_blackbox_exporter
+  init_blackbox_exporter
   if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] blackbox_exporter installed'; fi
 }
 
@@ -570,9 +612,15 @@ global:
   scrape_interval:     15s
   evaluation_interval: 15s
 
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-  # - "first.rules"
-  # - "second.rules"
+  - alert.rules.yml
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ['localhost:${ALERTMANAGER_PORT}']
 
 scrape_configs:
   - job_name: 'prometheus'
@@ -584,6 +632,21 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['localhost:${NODE_EXPORTER_PORT}']
+
+  - job_name: "http_probe"
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+     - targets:
+       - http://example.com
+    relabel_configs:
+    - source_labels: [__address__]
+      target_label: __param_target
+    - source_labels: [__param_target]
+      target_label: instance
+    - target_label: __address__
+      replacement: 127.0.0.1:${BLACKBOX_EXPORTER_PORT}
 EOM
 
   systemctl >/dev/null 2>&1
@@ -644,18 +707,24 @@ function install_apps() {
 
 function start_apps() {
   if $NODE_TRIGGER; then service node_exporter start; fi
+  if $BLACKBOX_TRIGGER; then service blackbox_exporter start; fi
   if $PROMETHEUS_TRIGGER; then service prometheus start; fi
 }
 
 
 function stop_apps() {
   if $NODE_TRIGGER; then service node_exporter stop; fi
+  if $BLACKBOX_TRIGGER; then service blackbox_exporter stop; fi
   if $PROMETHEUS_TRIGGER; then service prometheus stop; fi
 }
 
 
 function get_node_status() {
   service node_exporter status | awk 'NR==3 {printf "Status of node_exporter: %s\n", $2}'
+}
+
+function get_blackbox_status() {
+  service blackbox_exporter status | awk 'NR==3 {printf "Status of blackbox_exporter: %s\n", $2}'
 }
 
 
@@ -666,6 +735,7 @@ function get_prometheus_status() {
 
 function get_status() {
   if $NODE_TRIGGER; then get_node_status; fi
+  if $BLACKBOX_TRIGGER; then get_blackbox_status; fi
   if $PROMETHEUS_TRIGGER; then get_prometheus_status; fi
   echo
 }
@@ -686,6 +756,25 @@ function remove_node_exporter() {
     rm /etc/init.d/node_exporter
     rm /etc/default/node_exporter
     update-rc.d node_exporter remove
+  fi
+}
+
+
+function remove_blackbox_exporter() {
+  rm /usr/local/bin/blackbox_exporter
+
+  deluser --remove-home blackbox_exporter
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+    rm /etc/systemd/system/blackbox_exporter.service
+    systemctl daemon-reload
+  else
+    rm /etc/init.d/blackbox_exporter
+    rm /etc/default/blackbox_exporter
+    update-rc.d blackbox_exporter remove
   fi
 }
 
@@ -714,6 +803,7 @@ function remove_prometheus() {
 
 function remove_apps() {
   if $NODE_TRIGGER; then remove_node_exporter; fi
+  if $BLACKBOX_TRIGGER; then remove_blackbox_exporter; fi
   if $PROMETHEUS_TRIGGER; then remove_prometheus; fi
 }
 
