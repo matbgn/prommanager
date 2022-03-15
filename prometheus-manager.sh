@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v3.0.0!"
+MODT="Welcome to Prometheus manager v3.0.1!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -31,6 +31,8 @@ NODE_EXPORTER_PORT=9500
 BLACKBOX_EXPORTER_PORT=9510
 PROMETHEUS_PORT=9590
 ALERTMANAGER_PORT=9599
+
+BLACKBOX_URL_TO_PROBE="example.com, rts.ch"
 
 EXECUTE=false
 KILL_APPS=false
@@ -519,6 +521,8 @@ function download_blackbox_exporter() {
   mkdir /etc/prometheus &> /dev/null
   cp blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/blackbox.yml /etc/prometheus/
   chown blackbox_exporter:blackbox_exporter /etc/prometheus/blackbox.yml
+  sed -i 'i4\    http:' /etc/prometheus/blackbox.yml
+  sed -i 'i5\      preferred_ip_protocol: "ip4"' /etc/prometheus/blackbox.yml
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION"*; fi
 }
@@ -643,8 +647,7 @@ scrape_configs:
     params:
       module: [http_2xx]
     static_configs:
-     - targets:
-       - http://example.com
+     - targets: [$BLACKBOX_URL_TO_PROBE]
     relabel_configs:
     - source_labels: [__address__]
       target_label: __param_target
