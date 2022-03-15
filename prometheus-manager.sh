@@ -521,8 +521,8 @@ function download_blackbox_exporter() {
   mkdir /etc/prometheus &> /dev/null
   cp blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/blackbox.yml /etc/prometheus/
   chown blackbox_exporter:blackbox_exporter /etc/prometheus/blackbox.yml
-  sed -i 'i4\    http:' /etc/prometheus/blackbox.yml
-  sed -i 'i5\      preferred_ip_protocol: "ip4"' /etc/prometheus/blackbox.yml
+  sed -i '4i\    http:' /etc/prometheus/blackbox.yml
+  sed -i '5i\      preferred_ip_protocol: "ip4"' /etc/prometheus/blackbox.yml
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION"*; fi
 }

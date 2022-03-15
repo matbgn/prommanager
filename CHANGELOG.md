@@ -2,6 +2,8 @@
 - Ensure version numbers are present on fresh install
 - Update corresponding command on README.md
 - Add blackbox_exporter
+- Set ipv4 as preferred protocol for blackbox_exporter
+- Add sample list of URL to be watched
 - [WARNING] Breaking changes argument for install, exec, kill, status switched to lowercase for single letter
 
 # 2.0.0
