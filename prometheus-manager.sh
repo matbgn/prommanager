@@ -455,6 +455,8 @@ function download_node_exporter() {
   chown node_exporter:node_exporter /usr/local/bin/node_exporter
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf node_exporter-"$NODE_EXPORTER_VERSION"*; fi
+
+  printf "node_exporter downloaded\n"
 }
 
 
@@ -523,6 +525,8 @@ function download_blackbox_exporter() {
   chown blackbox_exporter:blackbox_exporter /etc/prometheus/blackbox.yml
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION"*; fi
+
+  printf "blackbox_exporter downloaded\n"
 }
 
 
@@ -595,6 +599,8 @@ function download_alertmanager() {
   chown alertmanager:alertmanager /usr/local/bin/alertmanager
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf alertmanager-"$ALERTMANAGER_VERSION"*; fi
+
+  printf "Alertmanager downloaded\n"
 }
 
 
@@ -664,20 +670,20 @@ groups:
     expr: up == 0
     for: 5m
     labels:
-      severity: critical
+      severity: "critical"
     annotations:
       summary: "Endpoint {{ $labels.instance }} down"
-      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes."
 
 
-  - alert: HttpProbeFailure
+  - alert: BlackboxProbeHttpFailure
     expr: probe_http_status_code <= 199 OR probe_http_status_code >= 400
     for: 0m
     labels:
       severity: critical
     annotations:
-      summary: HTTP connectivity failure (instance {{ $labels.instance }})
-      description: "HTTP status code is not 200-399\nVALUE = {{ $value }}\nLABELS = {{ $labels }}"
+      summary: Blackbox probe HTTP failure (instance {{ $labels.instance }})
+      description: "HTTP status code is not 200-399\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 EOM
 }
 
@@ -771,6 +777,8 @@ function download_prometheus() {
   chown -R prometheus:prometheus /etc/prometheus/console_libraries
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf prometheus-"$PROMETHEUS_VERSION"*; fi
+
+  printf "Prometheus downloaded\n"
 }
 
 
