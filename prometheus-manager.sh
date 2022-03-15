@@ -32,7 +32,7 @@ BLACKBOX_EXPORTER_PORT=9510
 PROMETHEUS_PORT=9590
 ALERTMANAGER_PORT=9599
 
-BLACKBOX_URL_TO_PROBE="example.com, rts.ch"
+BLACKBOX_URL_TO_PROBE="example.com, http://192.247.247.15:1880/"
 
 EXECUTE=false
 KILL_APPS=false
@@ -521,10 +521,16 @@ function download_blackbox_exporter() {
   mkdir /etc/prometheus &> /dev/null
   cp blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/blackbox.yml /etc/prometheus/
   chown blackbox_exporter:blackbox_exporter /etc/prometheus/blackbox.yml
-  sed -i '4i\    http:' /etc/prometheus/blackbox.yml
-  sed -i '5i\      preferred_ip_protocol: "ip4"' /etc/prometheus/blackbox.yml
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION"*; fi
+}
+
+
+function config_blackbox_exporter() {
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Config blackbox_exporter\n"; fi
+  # Set ipv4 as preferred protocol for blackbox_exporter
+  sed -i '4i\    http:' /etc/prometheus/blackbox.yml
+  sed -i '5i\      preferred_ip_protocol: "ip4"' /etc/prometheus/blackbox.yml
 }
 
 
@@ -571,6 +577,7 @@ EOM
 function install_blackbox_exporter() {
   if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting blackbox_exporter installation'; fi
   download_blackbox_exporter
+  config_blackbox_exporter
   init_blackbox_exporter
   if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] blackbox_exporter installed'; fi
 }
@@ -615,7 +622,9 @@ function download_prometheus() {
 }
 
 
-function init_prometheus() {
+function config_prometheus() {
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Config prometheus\n"; fi
+
   cat > /etc/prometheus/prometheus.yml <<EOM
 global:
   scrape_interval:     15s
@@ -656,7 +665,11 @@ scrape_configs:
     - target_label: __address__
       replacement: 127.0.0.1:${BLACKBOX_EXPORTER_PORT}
 EOM
+}
 
+
+function init_prometheus() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Setting prometheus daemon\n"; fi
   systemctl >/dev/null 2>&1
   # shellcheck disable=SC2181
   if [ $? -eq 0 ]
@@ -701,6 +714,7 @@ EOM
 function install_prometheus() {
   if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting prometheus installation'; fi
   download_prometheus
+  config_prometheus
   init_prometheus
   if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] prometheus installed'; fi
 }
