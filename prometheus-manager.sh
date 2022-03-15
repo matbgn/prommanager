@@ -595,9 +595,21 @@ function download_alertmanager() {
   cp alertmanager-"$ALERTMANAGER_VERSION".linux-"$SYSTEM_ARCH"/alertmanager /usr/local/bin
   chown alertmanager:alertmanager /usr/local/bin/alertmanager
 
-  mkdir /etc/prometheus &> /dev/null
-
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf alertmanager-"$ALERTMANAGER_VERSION"*; fi
+}
+
+
+function set_alertmanager_folders() {
+  mkdir /etc/prometheus &> /dev/null
+  mkdir -p /var/lib/alertmanager &> /dev/null
+
+  chown alertmanager:alertmanager /var/lib/alertmanager &> /dev/null
+  if [ $LOG_LEVEL -gt 3 ]
+  then
+    printf "Alertmanager directories:\n"
+    ls -all /var/lib/ | grep alertmanager
+    echo
+  fi
 }
 
 
@@ -637,6 +649,8 @@ inhibit_rules:
       severity: 'warning'
     equal: ['alertname', 'dev', 'instance']
 EOM
+
+  chown alertmanager:alertmanager /etc/prometheus/alertmanager.yml &> /dev/null
 }
 
 
@@ -689,6 +703,7 @@ Group=alertmanager
 Type=simple
 ExecStart=/usr/local/bin/alertmanager \
   --config.file /etc/prometheus/alertmanager.yml \
+  --storage.path /var/lib/alertmanager/ \
   --web.listen-address=:${ALERTMANAGER_PORT}
 
 [Install]
@@ -712,6 +727,7 @@ EOM
 function install_alertmanager() {
   if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting alertmanager installation'; fi
   download_alertmanager
+  set_alertmanager_folders
   config_alertmanager
   config_alert_rules
   init_alertmanager
