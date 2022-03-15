@@ -444,7 +444,7 @@ function download_node_exporter() {
   cp node_exporter-"$NODE_EXPORTER_VERSION".linux-"$SYSTEM_ARCH"/node_exporter /usr/local/bin
   chown node_exporter:node_exporter /usr/local/bin/node_exporter
 
-  rm -rf node_exporter-"$NODE_EXPORTER_VERSION"*
+  if [ $LOG_LEVEL -lt 3 ]; then rm -rf node_exporter-"$NODE_EXPORTER_VERSION"*; fi
 }
 
 
@@ -532,7 +532,7 @@ function download_prometheus() {
   chown -R prometheus:prometheus /etc/prometheus/consoles
   chown -R prometheus:prometheus /etc/prometheus/console_libraries
 
-  rm -rf prometheus-"$PROMETHEUS_VERSION"*
+  if [ $LOG_LEVEL -lt 3 ]; then rm -rf prometheus-"$PROMETHEUS_VERSION"*; fi
 }
 
 
@@ -717,9 +717,7 @@ function main() {
     remove_apps
   fi
 
-  if $UPDATE_VERSIONS; then
-    update_versions
-  fi
+  update_versions
 
   if $DISPLAY_VERSIONS; then
     display_versions
