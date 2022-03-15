@@ -32,7 +32,29 @@ BLACKBOX_EXPORTER_PORT=9510
 ALERTMANAGER_PORT=9550
 PROMETHEUS_PORT=9590
 
-BLACKBOX_URL_TO_PROBE="example.com, http://192.247.247.154:1880/"
+# Retrieve list of URLs to watch from .env file in form of:
+# BLACKBOX_URL_TO_PROBE="example.com, http://192.247.247.154:1880/"
+BLACKBOX_URL_TO_PROBE=""
+
+# Retrieve alert configuration from .env file in following form:
+# ALERT_EMAIL_TO="test@example.com,toto@example.com"
+ALERT_EMAIL_TO=""
+# ALERT_EMAIL_SMTP_FROM="smtp_allowed_sender@example.com"
+ALERT_EMAIL_SMTP_FROM=""
+# ALERT_EMAIL_SMTP_HOSTNAME_AND_PORT="smtp.gmail.com:587"
+ALERT_EMAIL_SMTP_HOSTNAME_AND_PORT=""
+# ALERT_EMAIL_SMTP_USER="username" // in some case it's the same as ALERT_EMAIL_SMTP_FROM
+ALERT_EMAIL_SMTP_USER=""
+# ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
+ALERT_EMAIL_SMTP_PASS=""
+# ALERT_WEBHOOK_URL="https://telepush.dev/api/inlets/alertmanager/:ID" -> e.g. for telegram
+ALERT_WEBHOOK_URL=""
+
+file=$(cat .env)
+for line in $file
+do
+    eval "${line%=*}"="${line##*=}"
+done
 
 EXECUTE=false
 KILL_APPS=false
@@ -623,10 +645,10 @@ function config_alertmanager() {
 
   cat > /etc/prometheus/alertmanager.yml <<EOM
 global:
-  smtp_from: server@bgn.ch
-  smtp_smarthost: ssl0.ovh.net:587
-  smtp_auth_username: server@bgn.ch
-  smtp_auth_password: QMj7N56iKrdZDX5iP3AX
+  smtp_from: $ALERT_EMAIL_SMTP_FROM
+  smtp_smarthost: $ALERT_EMAIL_SMTP_HOSTNAME_AND_PORT
+  smtp_auth_username: $ALERT_EMAIL_SMTP_USER
+  smtp_auth_password: $ALERT_EMAIL_SMTP_PASS
 route:
   group_by: ['alertname']
   # How long to initially wait to send a notification for a group
@@ -644,9 +666,9 @@ route:
 receivers:
 - name: 'alert.services'
   email_configs:
-    - to: 'it.testcse@bqn.ch'
+    - to: $ALERT_EMAIL_TO
   webhook_configs:
-    - url: 'https://telepush.dev/api/inlets/alertmanager/84c328'
+    - url: $ALERT_WEBHOOK_URL
 inhibit_rules:
   - source_match:
       severity: 'critical'
