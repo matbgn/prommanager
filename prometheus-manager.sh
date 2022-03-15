@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v2.1.0!"
+MODT="Welcome to Prometheus manager v2.1.1!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -631,6 +631,7 @@ function install_prometheus() {
 
 function install_apps() {
   if $NODE_TRIGGER; then install_node_exporter; fi
+  if $BLACKBOX_TRIGGER; then install_blackbox_exporter; fi
   if $PROMETHEUS_TRIGGER; then install_prometheus; fi
 }
 
