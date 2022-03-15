@@ -703,6 +703,14 @@ groups:
     annotations:
       summary: "Endpoint {{ \$labels.instance }} down"
       description: "{{ \$labels.instance }} of job {{ \$labels.job }} has been down for more than 5 minutes."
+  - alert: HTTPProbeFailed
+    expr: probe_success == 0
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: HTTP probe failed (instance {{ \$labels.instance }})
+      description: "Probe failed\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
 EOM
 }
 
