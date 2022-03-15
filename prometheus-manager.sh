@@ -478,7 +478,7 @@ function download_node_exporter() {
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf node_exporter-"$NODE_EXPORTER_VERSION"*; fi
 
-  printf "node_exporter downloaded\n"
+  printf "node_exporter downloaded\n\n"
 }
 
 
@@ -548,7 +548,7 @@ function download_blackbox_exporter() {
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf blackbox_exporter-"$BLACKBOX_EXPORTER_VERSION"*; fi
 
-  printf "blackbox_exporter downloaded\n"
+  printf "blackbox_exporter downloaded\n\n"
 }
 
 
@@ -622,7 +622,7 @@ function download_alertmanager() {
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf alertmanager-"$ALERTMANAGER_VERSION"*; fi
 
-  printf "Alertmanager downloaded\n"
+  printf "Alertmanager downloaded\n\n"
 }
 
 
@@ -790,7 +790,7 @@ function download_prometheus() {
 
   if [ $LOG_LEVEL -lt 3 ]; then rm -rf prometheus-"$PROMETHEUS_VERSION"*; fi
 
-  printf "Prometheus downloaded\n"
+  printf "Prometheus downloaded\n\n"
 }
 
 
