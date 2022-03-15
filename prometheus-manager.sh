@@ -673,17 +673,7 @@ groups:
       severity: "critical"
     annotations:
       summary: "Endpoint {{ \$labels.instance }} down"
-      description: "{{ \$labels.instance }} of job {{ \$labels.job }} has been down for more than 1 minutes."
-
-
-  - alert: HttpProbeFailure
-    expr: probe_http_status_code <= 199 OR probe_http_status_code >= 400
-    for: 0m
-    labels:
-      severity: critical
-    annotations:
-      summary: HTTP connectivity failure (instance {{ \$labels.instance }})
-      description: "HTTP status code is not 200-399\nVALUE = {{ \$value }}\nLABELS = {{ \$labels }}"
+      description: "{{ \$labels.instance }} of job {{ \$labels.job }} has been down for more than 5 minutes."
 EOM
 }
 
