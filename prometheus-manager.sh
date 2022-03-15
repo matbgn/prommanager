@@ -73,8 +73,6 @@ function usage {
         echo '                                       (see arguments below)'
         echo '   --update-versions [--<all|apps>]    Retrieve last version numbers available'
         echo '                                       for selected apps'
-        echo '   --update-config [--<all|apps>]      Overwrite config files based on .env'
-        echo '                                       file for selected apps (need restart)'
         echo '   -i, --install [--<all|apps>]        Install selected apps'
         echo '   -e, --exec [--<all|apps>]           Execute selected apps'
         echo '   -s, --status [--<all|apps>]         Prompt selected apps status'
@@ -91,6 +89,8 @@ function usage {
         echo '   -A [<version>]                      Specify alertmanager version'
         echo '   -p, --prom                          Process for Prometheus'
         echo '   -P [<version>]                      Specify prometheus version'
+        echo '   --update-config                     Overwrite config files based on .env'
+        echo '                                       file and alerts config (need restart)'
         echo '   --list-ports                        List all ports actually used'
         echo '   --arch arm64                        Set architecture, default is amd64'
         echo '   --offline                           For debug purpose only'
@@ -1082,6 +1082,7 @@ function main() {
 
   if $UPDATE_CONFIGS; then
     config_alertmanager
+    config_alert_rules
     config_prometheus
   fi
 
