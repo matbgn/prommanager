@@ -554,7 +554,6 @@ Group=blackbox_exporter
 Type=simple
 ExecStart=/usr/local/bin/blackbox_exporter \
   --config.file /etc/prometheus/blackbox.yml \
-  --cluster.listen-address= \
   --web.listen-address=:${BLACKBOX_EXPORTER_PORT}
 
 [Install]
@@ -703,6 +702,7 @@ Group=alertmanager
 Type=simple
 ExecStart=/usr/local/bin/alertmanager \
   --config.file /etc/prometheus/alertmanager.yml \
+  --cluster.listen-address= \
   --storage.path /var/lib/alertmanager/ \
   --web.listen-address=:${ALERTMANAGER_PORT}
 
