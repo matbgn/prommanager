@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v3.0.2!"
+MOTD="Welcome to Prometheus manager v3.0.0!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -1106,7 +1106,7 @@ function main() {
 }
 
 
-echo "$MODT"
+echo "$MOTD"
 check_root_rights
 echo
 
