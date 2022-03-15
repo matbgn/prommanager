@@ -1,5 +1,5 @@
 #!/bin/bash
-MODT="Welcome to Prometheus manager v2.1.3!"
+MODT="Welcome to Prometheus manager v2.1.4!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument -a arm64
@@ -543,6 +543,7 @@ User=blackbox_exporter
 Group=blackbox_exporter
 Type=simple
 ExecStart=/usr/local/bin/blackbox_exporter \
+  --config.file /etc/prometheus/blackbox.yml \
   --web.listen-address=:${BLACKBOX_EXPORTER_PORT}
 
 [Install]
@@ -557,7 +558,7 @@ EOM
     if [ $? -ne 0 ]
     then
       printf "You have to install blackbox_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
-      printf "$ pleaserun --user blackbox_exporter --group blackbox_exporter \\\n--install /usr/local/bin/blackbox_exporter --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
+      printf "$ pleaserun --user blackbox_exporter --group blackbox_exporter \\\n--install /usr/local/bin/blackbox_exporter --config.file /etc/prometheus/blackbox.yml\\\n--web.listen-address=:%s\n\n" "$BLACKBOX_EXPORTER_PORT"
     fi
   fi
 }
