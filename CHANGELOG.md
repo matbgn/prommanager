@@ -1,3 +1,8 @@
+# 3.1.0
+- Add communication services based on PingMe CLI (https://github.com/kha7iq/pingme)
+- Supported bridges are Microsoft Teams, Telegram, Slack, etc. see PingMe for full list
+- Retrieve .env values via shdotenv library for more robustness (https://github.com/ko1nksm/shdotenv) 
+
 # 3.0.0
 - Ensure version numbers are present on fresh install
 - Update corresponding command on README.md

@@ -50,27 +50,16 @@ ALERT_EMAIL_SMTP_USER=""
 # ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
 ALERT_EMAIL_SMTP_PASS=""
 
-# TODO: Change it and document with TEAMS_WEBHOOK_URL, TELEGRAM_WEBHOOK_URL
-# ALERT_WEBHOOK_URL="https://telepush.dev/api/inlets/alertmanager/:ID" -> e.g. for telegram
-TEAMS_WEBHOOK_URL=""
-
-#file=$(cat .env)
-#for line in $file
-#do
-#    eval "${line%=*}"="${line##*=}"
-#done
-
-eval "$(./lib/shdotenv)"
-
-# TODO: Create API URL dynamically from selected service
-# "http://localhost:$SHELL2HTTPAPI_PORT/notify_$NOTIFICATION_SERVICE?alert=$TEAMS_WEBHOOK_URL"
-ALERT_WEBHOOK_URL="http://localhost:$SHELL2HTTPAPI_PORT/notify_teams?alert=$TEAMS_WEBHOOK_URL"
+ALERT_WEBHOOK_URL="http://localhost:$SHELL2HTTPAPI_PORT/notify"
 
 EXECUTE=false
 KILL_APPS=false
 STATUS_APPS=false
 
 REMOVE_APPS=false
+
+# Retrieve .env values with abstraction of special characters
+eval "$(./lib/shdotenv)"
 
 function usage {
         echo "Usage: $(basename "$0") [<flags>]" 2>&1
@@ -98,6 +87,8 @@ function usage {
         echo '   -A [<version>]                      Specify alertmanager version'
         echo '   -p, --prom                          Process for Prometheus'
         echo '   -P [<version>]                      Specify prometheus version'
+        echo '   -c, --comm                          Process for Communication HTTP API'
+        echo '   -C [<version>]                      Specify Communication HTTP API version'
         echo '   --update-config                     Overwrite config files based on .env'
         echo '                                       file and alerts config (need restart)'
         echo '   --list-ports                        List all ports actually used'
