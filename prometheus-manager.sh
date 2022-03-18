@@ -31,6 +31,7 @@ INSTALL=false
 NODE_EXPORTER_PORT=9500
 BLACKBOX_EXPORTER_PORT=9510
 ALERTMANAGER_PORT=9550
+SHELL2HTTPAPI_PORT=9560
 PROMETHEUS_PORT=9590
 
 # Retrieve list of URLs to watch from .env file in form of:
@@ -48,14 +49,22 @@ ALERT_EMAIL_SMTP_HOSTNAME_AND_PORT=""
 ALERT_EMAIL_SMTP_USER=""
 # ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
 ALERT_EMAIL_SMTP_PASS=""
-# ALERT_WEBHOOK_URL="https://telepush.dev/api/inlets/alertmanager/:ID" -> e.g. for telegram
-ALERT_WEBHOOK_URL=""
 
-file=$(cat .env)
-for line in $file
-do
-    eval "${line%=*}"="${line##*=}"
-done
+# TODO: Change it and document with TEAMS_WEBHOOK_URL, TELEGRAM_WEBHOOK_URL
+# ALERT_WEBHOOK_URL="https://telepush.dev/api/inlets/alertmanager/:ID" -> e.g. for telegram
+TEAMS_WEBHOOK_URL=""
+
+#file=$(cat .env)
+#for line in $file
+#do
+#    eval "${line%=*}"="${line##*=}"
+#done
+
+eval "$(./lib/shdotenv)"
+
+# TODO: Create API URL dynamically from selected service
+# "http://localhost:$SHELL2HTTPAPI_PORT/notify_$NOTIFICATION_SERVICE?alert=$TEAMS_WEBHOOK_URL"
+ALERT_WEBHOOK_URL="http://localhost:$SHELL2HTTPAPI_PORT/notify_teams?alert=$TEAMS_WEBHOOK_URL"
 
 EXECUTE=false
 KILL_APPS=false
@@ -675,7 +684,7 @@ receivers:
   email_configs:
     - to: $ALERT_EMAIL_TO
   webhook_configs:
-    - url: $ALERT_WEBHOOK_URL
+    - url: '$ALERT_WEBHOOK_URL'
 inhibit_rules:
   - source_match:
       severity: 'critical'
