@@ -25,7 +25,7 @@ Get info with:
 
 Then let the retrieved versions stored in .env file do the job for all:
 
-    sudo ./prometheus-manager.sh --install --node --prom
+    sudo ./prometheus-manager.sh --install --node --prometheus
 
 Equivalent to:
 
