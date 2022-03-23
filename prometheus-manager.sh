@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v3.0.0!"
+MOTD="Welcome to Prometheus manager v4.0.0!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -11,7 +11,7 @@ DEBUG_OFFLINE=false
 # Retrieve versions from .versions file in form of:
 # NODE_EXPORTER_VERSION=1.3.1
 # PROMETHEUS_VERSION=2.33.5
-file=$(cat .versions)
+file=$(cat .versions &> /dev/null)
 for line in $file
 do
     eval "${line%=*}"="${line##*=}"
@@ -57,9 +57,6 @@ KILL_APPS=false
 STATUS_APPS=false
 
 REMOVE_APPS=false
-
-# Retrieve .env values with abstraction of special characters
-eval "$(./lib/shdotenv)"
 
 function usage {
         echo "Usage: $(basename "$0") [<flags>]" 2>&1
@@ -1081,6 +1078,23 @@ function list_used_ports() {
 }
 
 
+function retrieve_env_datas() {
+  # Retrieve .env values with abstraction of special characters
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Download shdotenv if needed\n"; fi
+
+  test -f /usr/local/bin/shdotenv || curl -OL https://github.com/matbgn/prometheus-manager/raw/master/lib/shdotenv &> /dev/null
+
+  cp shdotenv /usr/local/bin &> /dev/null
+  chmod 755 /usr/local/bin/shdotenv
+  rm shdotenv &> /dev/null
+
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] shdotenv installed'; fi
+
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Load env file'; fi
+  eval "$(/usr/local/bin/shdotenv )"
+}
+
+
 # shellcheck disable=SC2120
 function main() {
   printf 'Selected architecture is %s\n\n' "$SYSTEM_ARCH"
@@ -1132,5 +1146,6 @@ if [[ ${#} -eq 0 ]]; then
 fi
 
 flags "$@"
+retrieve_env_datas
 # shellcheck disable=SC2119
 main
