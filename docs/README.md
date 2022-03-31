@@ -33,7 +33,9 @@ PromManager for Prometheus
 
 
 ## Description
-**PromManager** is a [KISS](https://en.wikipedia.org/wiki/KISS_principle) tool to set up, automatically update and execute Prometheus and related services with CLI.
+**PromManager** is a [KISS](https://en.wikipedia.org/wiki/KISS_principle) tool to set up, automatically update and execute Prometheus and related services with CLI on Linux servers which could be then interfaced with a Grafana Dashboard.
+
+The main advantage is to facilitate maintenance trough multiple servers.
 
 PromManager does not claim to allow all possible configurations with prometheus' ecosystem, but remains a good starting point for a simple and quick deployment.
 
