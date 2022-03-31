@@ -19,31 +19,13 @@ DISPLAY_VERSIONS=false
 
 UPDATE_VERSIONS=false
 UPDATE_CONFIGS=false
-
 INSTALL=false
+
 NODE_EXPORTER_PORT=9500
 BLACKBOX_EXPORTER_PORT=9510
 ALERTMANAGER_PORT=9550
 SHELL2HTTP_PORT=9560
 PROMETHEUS_PORT=9590
-
-# Retrieve list of URLs to watch from .env file in form of:
-# BLACKBOX_URL_TO_PROBE="example.com, http://192.247.247.154:1880/"
-BLACKBOX_URL_TO_PROBE=""
-
-# Retrieve alert configuration from .env file in following form:
-# ALERT_EMAIL_TO="test@example.com,toto@example.com"
-ALERT_EMAIL_TO=""
-# ALERT_EMAIL_SMTP_FROM="smtp_allowed_sender@example.com"
-ALERT_EMAIL_SMTP_FROM=""
-# ALERT_EMAIL_SMTP_HOSTNAME_AND_PORT="smtp.gmail.com:587"
-ALERT_EMAIL_SMTP_HOSTNAME_AND_PORT=""
-# ALERT_EMAIL_SMTP_USER="username" // in some case it's the same as ALERT_EMAIL_SMTP_FROM
-ALERT_EMAIL_SMTP_USER=""
-# ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
-ALERT_EMAIL_SMTP_PASS=""
-
-ALERT_WEBHOOK_URL="http://localhost:$SHELL2HTTP_PORT/notify"
 
 EXECUTE=false
 KILL_APPS=false
@@ -1392,7 +1374,11 @@ function retrieve_env_datas() {
   if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] shdotenv installed'; fi
 
   if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Load env files'; fi
+
   eval "$(/usr/local/bin/shdotenv -e .env)"
+  # Compose additional env var based on .env file
+  ALERT_WEBHOOK_URL="http://localhost:$SHELL2HTTP_PORT/notify"
+
   # Retrieve versions from .versions file in form of:
   # NODE_EXPORTER_VERSION=1.3.1
   # PROMETHEUS_VERSION=2.33.5

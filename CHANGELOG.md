@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
 ### Added
 - Add latest release as preferred download channel (stability)
+- Add possibility to override ports used for each service
+
+### Changed
+- Improve .env.example
 
 ## [4.0.0] - 2022-04-01
 ### Added
