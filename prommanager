@@ -940,13 +940,13 @@ cat > \$ALERT_TMP_FILE
 
 eval "\$(/usr/local/bin/shdotenv -e /etc/prometheus/.env.shell2http)"
 
-export title="Status: \$(jq -r '.status' $ALERT_TMP_FILE) |
-Alert: \$(jq -r '.commonLabels.alertname' $ALERT_TMP_FILE) |
-Severity: \$(jq -r '.commonLabels.severity' $ALERT_TMP_FILE)"
+export title="Status: \$(jq -r '.status' \$ALERT_TMP_FILE) |
+Alert: \$(jq -r '.commonLabels.alertname' \$ALERT_TMP_FILE) |
+Severity: \$(jq -r '.commonLabels.severity' \$ALERT_TMP_FILE)"
 
-export msg="Instance: \$(jq -r '.commonLabels.instance' $ALERT_TMP_FILE) |
-Description: \$(jq -r '.commonAnnotations.description' $ALERT_TMP_FILE) |
-Summary: \$(jq -r '.commonAnnotations.summary' $ALERT_TMP_FILE)"
+export msg="Instance: \$(jq -r '.commonLabels.instance' \$ALERT_TMP_FILE) |
+Description: \$(jq -r '.commonAnnotations.description' \$ALERT_TMP_FILE) |
+Summary: \$(jq -r '.commonAnnotations.summary' \$ALERT_TMP_FILE)"
 
 eval "set -- \$NOTIFY_SERVICES"
 while [ \$# -gt 0 ]; do
