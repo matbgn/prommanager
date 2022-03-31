@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v4.0.0!"
+MOTD="Welcome to Prometheus manager v4.0.1!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -54,36 +54,19 @@ function usage {
         echo '                                       selected apps'
         echo '   --update-config                     Overwrite config files based on .env'
         echo '                                       file and alerts config (need restart)'
+        echo '   --offline                           For debug purpose only'
         echo ''
         echo '------------- APPS FLAGS -----------------------------------------------------'
         echo ''
         echo '   --all                               Process script for all available apps'
         echo '                                       (prometheus, node_exporter, etc.)'
-        echo '   -n, --node                          Process above command with'
-        echo '                                       node_exporter'
-        echo '   -N [<version>]                      Force version to be used for'
-        echo '                                       node_exporter'
-        echo '   -b, --blackbox                      Process above command with'
-        echo '                                       blackbox_exporter'
-        echo '   -B [<version>]                      Force version to be used for'
-        echo '                                       blackbox_exporter'
-        echo '   -a, --alertmanager                  Process above command with'
-        echo '                                       Alertmanager'
-        echo '   -A [<version>]                      Force version to be used for'
-        echo '                                       Alertmanager'
-        echo '   -p, --prometheus                    Process above command with'
-        echo '                                       Prometheus'
-        echo '   -P [<version>]                      Force version to be used for'
-        echo '                                       Prometheus'
-        echo '   -c, --cgi                           Process above command with'
-        echo '                                       CGI SHELL2HTTP API'
-        echo '   -C [<version>]                      Force version to be used for'
-        echo '                                       CGI SHELL2HTTP API'
-        echo '   -m, --messaging                     Process above command with'
-        echo '                                       Messaging System (PingMe CLI)'
-        echo '   -M [<version>]                      Force version to be used for'
-        echo '                                       Messaging System (PingMe CLI)'
-        echo '   --offline                           For debug purpose only'
+        echo '   -n, --node, -N [<version>]          Process for node_exporter'
+        echo '                                       Version can be forced with capital letter'
+        echo '   -b, --blackbox, -B [<version>]      Process for blackbox_exporter'
+        echo '   -a, --alertmanager, -A [<version>]  Process for Alertmanager'
+        echo '   -p, --prometheus, -P [<version>]    Process for Prometheus'
+        echo '   -c, --cgi, -C [<version>]           Process for CGI SHELL2HTTP API'
+        echo '   -m, --messaging, -M [<version>]     Process for Messaging System (PingMe CLI)'
         exit 1
 }
 

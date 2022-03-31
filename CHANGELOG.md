@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Improve .env.example
+- Make usage help context more compact 
 
 ## [4.0.0] - 2022-04-01
 ### Added
