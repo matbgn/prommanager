@@ -21,6 +21,7 @@ UPDATE_VERSIONS=false
 UPDATE_CONFIGS=false
 INSTALL=false
 
+# Default configuration if not override by .env file
 NODE_EXPORTER_PORT=9500
 BLACKBOX_EXPORTER_PORT=9510
 ALERTMANAGER_PORT=9550
