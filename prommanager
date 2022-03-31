@@ -848,10 +848,10 @@ function download_shell2http() {
   if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Download shell2http\n"; fi
   useradd --no-create-home --shell /bin/false shell2http &> /dev/null || grep shell2http /etc/passwd
   test -f shell2http_"$SHELL2HTTP_VERSION"_linux_"$SYSTEM_ARCH".tar.gz ||
-  curl -OL https://github.com/prometheus/shell2http/releases/download/v"$SHELL2HTTP_VERSION"/shell2http_"$SHELL2HTTP_VERSION"_linux_"$SYSTEM_ARCH".tar.gz
+  curl -OL https://github.com/msoap/shell2http/releases/download/v"$SHELL2HTTP_VERSION"/shell2http_"$SHELL2HTTP_VERSION"_linux_"$SYSTEM_ARCH".tar.gz
   echo
 
-  tar xfz shell2http-*.tar.gz &> /dev/null
+  tar xfz shell2http_*.tar.gz &> /dev/null
   cp shell2http /usr/local/bin
   chown shell2http:shell2http /usr/local/bin/shell2http
 
