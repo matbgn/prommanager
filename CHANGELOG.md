@@ -1,4 +1,5 @@
 # 4.0.0
+- Rename project to be more compliant with Linux Trademark usage
 - Add communication services based on PingMe CLI (https://github.com/kha7iq/pingme)
 - Supported bridges are Microsoft Teams, Telegram, Slack, etc. see PingMe for full list
 - Retrieve .env values via shdotenv library for more robustness (https://github.com/ko1nksm/shdotenv) 

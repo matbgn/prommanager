@@ -2,19 +2,17 @@
 <!-- markdownlint-disable-next-line -->
 <h2 align="center">
   <br>
-  <p align="center"><img width=35% alt="" src="https://raw.githubusercontent.com/matbgn/prometheus-manager/master/docs/img/prometheus-manager_logo.svg"></p>
-Prometheus Manager
+  <p align="center"><img width=35% alt="" src="https://raw.githubusercontent.com/matbgn/prommanager/master/docs/img/prommanager_logo.svg"></p>
+PromManager for Prometheus
 </h2>
 
 <p align="center">
-   <a href="https://github.com/matbgn/prometheus-manager/releases">
-   <img alt="Release" src="https://img.shields.io/github/v/release/matbgn/prometheus-manager">
-   <a href="https://github.com/matbgn/prometheus-manager/issues">
-   <img alt="GitHub issues" src="https://img.shields.io/github/issues/matbgn/prometheus-manager?style=flat-square&logo=github&logoColor=white">
-   <a href="https://github.com/matbgn/prometheus-manager/blob/master/LICENSE.md">
-   <img alt="License" src="https://img.shields.io/github/license/matbgn/prometheus-manager">
-   <a href="https://github.com/agarrharr/awesome-cli-apps#devops">
-   <img alt="Awesome" src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg">
+   <a href="https://github.com/matbgn/prommanager/releases">
+   <img alt="Release" src="https://img.shields.io/github/v/release/matbgn/prommanager">
+   <a href="https://github.com/matbgn/prommanager/issues">
+   <img alt="GitHub issues" src="https://img.shields.io/github/issues/matbgn/prommanager?style=flat-square&logo=github&logoColor=white">
+   <a href="https://github.com/matbgn/prommanager/blob/master/LICENSE.md">
+   <img alt="License" src="https://img.shields.io/github/license/matbgn/prommanager">
 </p>
 
 <p align="center">
@@ -35,7 +33,9 @@ Prometheus Manager
 
 
 ## Description
-**Prometheus Manager** is a tool to install, update and execute Prometheus and different exporters automatically.
+**PromManager** is a [KISS](https://en.wikipedia.org/wiki/KISS_principle) tool to set up, automatically update and execute Prometheus and related services with CLI.
+
+PromManager does not claim to allow all possible configurations with prometheus' ecosystem, but remains a good starting point for a simple and quick deployment.
 
 ## Supported services
 
@@ -51,40 +51,40 @@ Prometheus Manager
   - *And many more thanks to [PingMe CLI](https://pingme.lmno.pk/#/services) Integration*
 
 ## Installation
-    curl -OL https://raw.githubusercontent.com/matbgn/prometheus-manager/master/prometheus-manager.sh
-    chmod +x prometheus-manager.sh
-    ./prometheus-manager.sh -h
+    curl -OL https://raw.githubusercontent.com/matbgn/prommanager/master/prommanager
+    chmod +x prommanager
+    ./prommanager -h
 
 ## Usage
 Get helper by running this command:
 
-    sudo ./prometheus-manager.sh --help
+    sudo ./prommanager --help
 
 ### OS Architecture
 Specify which one you want with (default is amd64):
 
-    sudo ./prometheus-manager.sh --arch arm64 [--<flags>]
+    sudo ./prommanager --arch arm64 [--<flags>]
 
 ### Pull latest release versions
 Get info with:
 
-    sudo ./prometheus-manager.sh --versions --all
+    sudo ./prommanager --versions --all
 
 Then let the retrieved versions stored in .env file do the job for all:
 
-    sudo ./prometheus-manager.sh --install --node --prometheus
+    sudo ./prommanager --install --node --prometheus
 
 Equivalent to:
 
-    sudo ./prometheus-manager.sh --install --all
+    sudo ./prommanager --install --all
 
 Or specify which version you will install by:
 
-    sudo ./prometheus-manager.sh --install -N 1.1.2 -P 2.2.7
+    sudo ./prommanager --install -N 1.1.2 -P 2.2.7
 
 ### Get actual services status
 
-    sudo ./prometheus-manager.sh --status --all
+    sudo ./prommanager --status --all
 
 ## Configuration
 

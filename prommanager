@@ -1082,7 +1082,7 @@ function retrieve_env_datas() {
   # Retrieve .env values with abstraction of special characters
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Download shdotenv if needed\n"; fi
 
-  test -f /usr/local/bin/shdotenv || curl -OL https://github.com/matbgn/prometheus-manager/raw/master/lib/shdotenv &> /dev/null
+  test -f /usr/local/bin/shdotenv || curl -OL https://github.com/matbgn/prommanager/raw/master/lib/shdotenv &> /dev/null
 
   cp shdotenv /usr/local/bin &> /dev/null
   chmod 755 /usr/local/bin/shdotenv
