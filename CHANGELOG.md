@@ -1,4 +1,5 @@
 # 4.0.0
+- Since v4 add script as released asset for retro compatibility issues
 - Rename project to be more compliant with Linux Trademark usage
 - Add communication services based on PingMe CLI (https://github.com/kha7iq/pingme)
 - Supported bridges are Microsoft Teams, Telegram, Slack, etc. see PingMe for full list
