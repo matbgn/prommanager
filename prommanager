@@ -13,6 +13,7 @@ BLACKBOX_TRIGGER=false
 ALERTMANAGER_TRIGGER=false
 PROMETHEUS_TRIGGER=false
 SHELL2HTTP_TRIGGER=false
+PINGME_TRIGGER=false
 
 DISPLAY_VERSIONS=false
 
@@ -166,6 +167,7 @@ function flags() {
         PROMETHEUS_TRIGGER=true
         ALERTMANAGER_TRIGGER=true
         SHELL2HTTP_TRIGGER=true
+        PINGME_TRIGGER=true
         shift # argument
         ;;
       -n|--node)
@@ -214,11 +216,26 @@ function flags() {
         ;;
       -c|--cgi)
         SHELL2HTTP_TRIGGER=true
+        PINGME_TRIGGER=true
         shift # argument
         ;;
       -C)
         check_options_mandatory "$2"
         SHELL2HTTP_VERSION="$2"
+        SHELL2HTTP_TRIGGER=true
+        PINGME_TRIGGER=true
+        shift # argument
+        shift # value
+        ;;
+      -m|--messaging)
+        PINGME_TRIGGER=true
+        SHELL2HTTP_TRIGGER=true
+        shift # argument
+        ;;
+      -M)
+        check_options_mandatory "$2"
+        PINGME_VERSION="$2"
+        PINGME_TRIGGER=true
         SHELL2HTTP_TRIGGER=true
         shift # argument
         shift # value
@@ -358,6 +375,28 @@ function retrieve_shell2http_version() {
 }
 
 
+function retrieve_pingme_version() {
+    if [ $LOG_LEVEL -gt 3 ]
+    then
+      echo '[DEBUG] Retrieving PingMe CLI version...'
+    fi
+
+    PINGME_VERSION_CURLED="$(curl -s https://api.github.com/repos/kha7iq/pingme/releases/latest |
+    grep 'tag_name' | awk '{printf substr($2, 3, length($2)-4)}')"
+
+    if [[ -z $PINGME_VERSION_CURLED ]]
+    then
+      echo '[ERROR] System was not able to retrieve PingMe CLI version check your internet connection'
+      exit 1
+    fi
+
+    if [ $LOG_LEVEL -gt 2 ]
+    then
+      echo "[INFO] PingMe CLI version retrieved: " "$PINGME_VERSION_CURLED"
+    fi
+}
+
+
 function retrieve_prometheus_version() {
     if [ $LOG_LEVEL -gt 3 ]
     then
@@ -407,6 +446,12 @@ function ensure_versions() {
     SHELL2HTTP_VERSION=$SHELL2HTTP_VERSION_CURLED
   fi
 
+  if [ "${#PINGME_VERSION}" -lt 5 ] || $PINGME_TRIGGER && $UPDATE_VERSIONS
+  then
+    retrieve_pingme_version
+    PINGME_VERSION=$PINGME_VERSION_CURLED
+  fi
+
   if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || $PROMETHEUS_TRIGGER && $UPDATE_VERSIONS
   then
     retrieve_prometheus_version
@@ -423,6 +468,7 @@ BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION
 ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION
 PROMETHEUS_VERSION=$PROMETHEUS_VERSION
 SHELL2HTTP_VERSION=$SHELL2HTTP_VERSION
+PINGME_VERSION=$PINGME_VERSION
 EOM
 
   chmod 666 .versions
@@ -512,6 +558,25 @@ function display_shell2http_versions() {
 }
 
 
+function display_pingme_versions() {
+  if $DEBUG_OFFLINE; then PINGME_VERSION_CURLED=""; else retrieve_pingme_version; fi
+  if [ -z "$PINGME_VERSION_CURLED" ]
+  then
+    PINGME_VERSION_CURLED="You're offline"
+  fi
+  printf "Highest available version for PingMe CLI is: %s\n" "$PINGME_VERSION_CURLED"
+
+  printf "Installation version for PingMe CLI will be: %s\n" "$PINGME_VERSION"
+
+  INSTALLED_PINGME_VERSION=$(/usr/local/bin/pingme --version 2>&1 | awk 'NR==1 {printf $3}')
+  if [ "${#INSTALLED_PINGME_VERSION}" -lt 5 ]
+  then
+    INSTALLED_PINGME_VERSION="Not installed"
+  fi
+  printf "Actual version of PingMe CLI is: %s\n\n" "$INSTALLED_PINGME_VERSION"
+}
+
+
 function display_prometheus_versions() {
   if $DEBUG_OFFLINE; then PROMETHEUS_VERSION_CURLED=""; else retrieve_prometheus_version; fi
   if [ -z "$PROMETHEUS_VERSION_CURLED" ]
@@ -537,6 +602,7 @@ function display_versions() {
   if $BLACKBOX_TRIGGER; then display_blackbox_versions; fi
   if $ALERTMANAGER_TRIGGER; then display_alertmanager_versions; fi
   if $SHELL2HTTP_TRIGGER; then display_shell2http_versions; fi
+  if $PINGME_TRIGGER; then display_pingme_versions; fi
   if $PROMETHEUS_TRIGGER; then display_prometheus_versions; fi
 }
 
@@ -944,6 +1010,32 @@ function install_shell2http() {
 }
 
 
+function download_pingme() {
+  if [ "$SYSTEM_ARCH" = "amd64" ]; then PINGME_SYSTEM_ARCH="x86_64"; else PINGME_SYSTEM_ARCH=$SYSTEM_ARCH; fi
+
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Download PingMe CLI\n"; fi
+  useradd --no-create-home --shell /bin/false pingme &> /dev/null || grep pingme /etc/passwd
+  test -f pingme_Linux_"$PINGME_SYSTEM_ARCH".tar.gz ||
+  curl -OL https://github.com/kha7iq/pingme/releases/download/v"$PINGME_VERSION"/pingme_Linux_"$PINGME_SYSTEM_ARCH".tar.gz
+  echo
+
+  tar xfz pingme_*.tar.gz &> /dev/null
+  cp pingme /usr/local/bin
+  chown pingme:pingme /usr/local/bin/pingme
+
+  if [ $LOG_LEVEL -lt 3 ]; then rm -rf pingme*; fi
+
+  printf "PingMe CLI downloaded\n\n"
+}
+
+
+function install_pingme() {
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting PingMe CLI installation'; fi
+  download_pingme
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] PingMe CLI installed'; fi
+}
+
+
 function set_prometheus_folders() {
   mkdir /etc/prometheus &> /dev/null
   mkdir /var/lib/prometheus &> /dev/null
@@ -1091,6 +1183,7 @@ function install_apps() {
   if $BLACKBOX_TRIGGER; then install_blackbox_exporter; fi
   if $ALERTMANAGER_TRIGGER; then install_alertmanager; fi
   if $SHELL2HTTP_TRIGGER; then install_shell2http; fi
+  if $PINGME_TRIGGER; then install_pingme; fi
   if $PROMETHEUS_TRIGGER; then install_prometheus; fi
 }
 
@@ -1133,6 +1226,11 @@ function get_shell2http_status() {
 }
 
 
+function get_pingme_status() {
+  test -f /usr/local/bin/pingme && printf "Status of PingMe CLI: active\n"
+}
+
+
 function get_prometheus_status() {
   service prometheus status | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
 }
@@ -1143,6 +1241,7 @@ function get_status() {
   if $BLACKBOX_TRIGGER; then get_blackbox_status; fi
   if $ALERTMANAGER_TRIGGER; then get_alertmanager_status; fi
   if $SHELL2HTTP_TRIGGER; then get_shell2http_status; fi
+  if $PINGME_TRIGGER; then get_pingme_status; fi
   if $PROMETHEUS_TRIGGER; then get_prometheus_status; fi
   echo
 }
@@ -1227,6 +1326,13 @@ function remove_shell2http() {
 }
 
 
+function remove_pingme() {
+  rm /usr/local/bin/pingme
+
+  deluser --remove-home pingme
+}
+
+
 function remove_prometheus() {
   rm /usr/local/bin/prometheus
   rm /usr/local/bin/promtool
@@ -1254,6 +1360,7 @@ function remove_apps() {
   if $BLACKBOX_TRIGGER; then remove_blackbox_exporter; fi
   if $ALERTMANAGER_TRIGGER; then remove_alertmanager; fi
   if $SHELL2HTTP_TRIGGER; then remove_shell2http; fi
+  if $PINGME_TRIGGER; then remove_pingme; fi
   if $PROMETHEUS_TRIGGER; then remove_prometheus; fi
 }
 
