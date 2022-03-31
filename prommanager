@@ -422,37 +422,37 @@ function ensure_versions() {
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] UPDATE_VERSIONS flag is: %s\n" "$UPDATE_VERSIONS"; fi
 
   # Test if file is correctly filled or if update is request
-  if [ "${#NODE_EXPORTER_VERSION}" -lt 5 ] || $NODE_TRIGGER && $UPDATE_VERSIONS
+  if $NODE_TRIGGER && $UPDATE_VERSIONS || [ "${#NODE_EXPORTER_VERSION}" -lt 5 ]
   then
     retrieve_node_version
     NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#BLACKBOX_EXPORTER_VERSION}" -lt 5 ] || $BLACKBOX_TRIGGER && $UPDATE_VERSIONS
+  if $BLACKBOX_TRIGGER && $UPDATE_VERSIONS || [ "${#BLACKBOX_EXPORTER_VERSION}" -lt 5 ]
   then
     retrieve_blackbox_version
     BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#ALERTMANAGER_VERSION}" -lt 5 ] || $ALERTMANAGER_TRIGGER && $UPDATE_VERSIONS
+  if $ALERTMANAGER_TRIGGER && $UPDATE_VERSIONS || [ "${#ALERTMANAGER_VERSION}" -lt 5 ]
   then
     retrieve_alertmanager_version
     ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION_CURLED
   fi
 
-  if [ "${#SHELL2HTTP_VERSION}" -lt 5 ] || $SHELL2HTTP_TRIGGER && $UPDATE_VERSIONS
+  if $SHELL2HTTP_TRIGGER && $UPDATE_VERSIONS || [ "${#SHELL2HTTP_VERSION}" -lt 5 ]
   then
     retrieve_shell2http_version
     SHELL2HTTP_VERSION=$SHELL2HTTP_VERSION_CURLED
   fi
 
-  if [ "${#PINGME_VERSION}" -lt 5 ] || $PINGME_TRIGGER && $UPDATE_VERSIONS
+  if $PINGME_TRIGGER && $UPDATE_VERSIONS || [ "${#PINGME_VERSION}" -lt 5 ]
   then
     retrieve_pingme_version
     PINGME_VERSION=$PINGME_VERSION_CURLED
   fi
 
-  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || $PROMETHEUS_TRIGGER && $UPDATE_VERSIONS
+  if $PROMETHEUS_TRIGGER && $UPDATE_VERSIONS || [ "${#PROMETHEUS_VERSION}" -lt 5 ]
   then
     retrieve_prometheus_version
     PROMETHEUS_VERSION=$PROMETHEUS_VERSION_CURLED
@@ -1227,7 +1227,7 @@ function get_shell2http_status() {
 
 
 function get_pingme_status() {
-  test -f /usr/local/bin/pingme && printf "Status of PingMe CLI: active\n"
+  test -f /usr/local/bin/pingme && printf "Status of PingMe CLI: installed (OK)\n"
 }
 
 
