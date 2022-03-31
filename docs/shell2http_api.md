@@ -7,4 +7,4 @@
 
 ## Launch shell2http
 
-    ./lib/shell2http -port=9560 -cgi /notify_teams './notify_teams.sh'
+    /usr/local/bin/shell2http -port=9560 -cgi /notify './notify_services.sh'

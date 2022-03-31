@@ -860,24 +860,27 @@ function config_shell2http() {
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Storing actual env to be accessible by shell2http on further alerts\n"; fi
 
   mkdir /etc/prometheus &> /dev/null
-  shdotenv -e .env --noexport > /etc/prometheus/.env.shell2http
+  cp .env /etc/prometheus/.env.shell2http
+  touch /etc/prometheus/.tmp.shell2http
 
   chown shell2http:shell2http /etc/prometheus/.env.shell2http &> /dev/null
+  chown shell2http:shell2http /etc/prometheus/.tmp.shell2http &> /dev/null
 
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Prepare script for notification by shell2http\n"; fi
   cat > /etc/prometheus/notify_services.sh << EOM
 #!/bin/bash
-cat >.tmp
+ALERT_TMP_FILE="/etc/prometheus/.tmp.shell2http"
+cat > \$ALERT_TMP_FILE
 
 eval "\$(/usr/local/bin/shdotenv -e /etc/prometheus/.env.shell2http)"
 
-export title="Status: \$(jq -r '.status' .tmp) |
-Alert: \$(jq -r '.commonLabels.alertname' .tmp) |
-Severity: \$(jq -r '.commonLabels.severity' .tmp)"
+export title="Status: \$(jq -r '.status' $ALERT_TMP_FILE) |
+Alert: \$(jq -r '.commonLabels.alertname' $ALERT_TMP_FILE) |
+Severity: \$(jq -r '.commonLabels.severity' $ALERT_TMP_FILE)"
 
-export msg="Instance: \$(jq -r '.commonLabels.instance' .tmp) |
-Description: \$(jq -r '.commonAnnotations.description' .tmp) |
-Summary: \$(jq -r '.commonAnnotations.summary' .tmp)"
+export msg="Instance: \$(jq -r '.commonLabels.instance' $ALERT_TMP_FILE) |
+Description: \$(jq -r '.commonAnnotations.description' $ALERT_TMP_FILE) |
+Summary: \$(jq -r '.commonAnnotations.summary' $ALERT_TMP_FILE)"
 
 eval "set -- \$NOTIFY_SERVICES"
 while [ \$# -gt 0 ]; do
@@ -886,8 +889,6 @@ while [ \$# -gt 0 ]; do
   --msg "\$msg"
   shift
 done
-
-rm .tmp
 EOM
 
   chmod 755 /etc/prometheus/notify_services.sh
