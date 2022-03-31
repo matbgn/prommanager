@@ -197,7 +197,7 @@ function flags() {
         shift # argument
         shift # value
         ;;
-      -a|--alert)
+      -a|--alertmanager)
         ALERTMANAGER_TRIGGER=true
         shift # argument
         ;;
@@ -208,7 +208,7 @@ function flags() {
         shift # argument
         shift # value
         ;;
-      -p|--prom)
+      -p|--prometheus)
         PROMETHEUS_TRIGGER=true
         shift # argument
         ;;
