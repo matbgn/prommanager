@@ -8,15 +8,6 @@ LOG_LEVEL=0
 
 DEBUG_OFFLINE=false
 
-# Retrieve versions from .versions file in form of:
-# NODE_EXPORTER_VERSION=1.3.1
-# PROMETHEUS_VERSION=2.33.5
-file=$(cat .versions &> /dev/null)
-for line in $file
-do
-    eval "${line%=*}"="${line##*=}"
-done
-
 NODE_TRIGGER=false
 BLACKBOX_TRIGGER=false
 ALERTMANAGER_TRIGGER=false
@@ -389,32 +380,34 @@ function retrieve_prometheus_version() {
 
 
 function ensure_versions() {
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] UPDATE_VERSIONS flag is: %s\n" "$UPDATE_VERSIONS"; fi
+
   # Test if file is correctly filled or if update is request
-  if [ "${#NODE_EXPORTER_VERSION}" -lt 5 ] || ($NODE_TRIGGER && $UPDATE_VERSIONS)
+  if [ "${#NODE_EXPORTER_VERSION}" -lt 5 ] || $NODE_TRIGGER && $UPDATE_VERSIONS
   then
     retrieve_node_version
     NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#BLACKBOX_EXPORTER_VERSION}" -lt 5 ] || ($BLACKBOX_TRIGGER && $UPDATE_VERSIONS)
+  if [ "${#BLACKBOX_EXPORTER_VERSION}" -lt 5 ] || $BLACKBOX_TRIGGER && $UPDATE_VERSIONS
   then
     retrieve_blackbox_version
     BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION_CURLED
   fi
 
-  if [ "${#ALERTMANAGER_VERSION}" -lt 5 ] || ($ALERTMANAGER_TRIGGER && $UPDATE_VERSIONS)
+  if [ "${#ALERTMANAGER_VERSION}" -lt 5 ] || $ALERTMANAGER_TRIGGER && $UPDATE_VERSIONS
   then
     retrieve_alertmanager_version
     ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION_CURLED
   fi
 
-  if [ "${#SHELL2HTTP_VERSION}" -lt 5 ] || ($SHELL2HTTP_TRIGGER && $UPDATE_VERSIONS)
+  if [ "${#SHELL2HTTP_VERSION}" -lt 5 ] || $SHELL2HTTP_TRIGGER && $UPDATE_VERSIONS
   then
     retrieve_shell2http_version
     SHELL2HTTP_VERSION=$SHELL2HTTP_VERSION_CURLED
   fi
 
-  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || ($PROMETHEUS_TRIGGER && $UPDATE_VERSIONS)
+  if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || $PROMETHEUS_TRIGGER && $UPDATE_VERSIONS
   then
     retrieve_prometheus_version
     PROMETHEUS_VERSION=$PROMETHEUS_VERSION_CURLED
@@ -1289,8 +1282,12 @@ function retrieve_env_datas() {
 
   if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] shdotenv installed'; fi
 
-  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Load env file'; fi
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Load env files'; fi
   eval "$(/usr/local/bin/shdotenv -e .env)"
+  # Retrieve versions from .versions file in form of:
+  # NODE_EXPORTER_VERSION=1.3.1
+  # PROMETHEUS_VERSION=2.33.5
+  eval "$(/usr/local/bin/shdotenv -e .versions)"
 }
 
 
