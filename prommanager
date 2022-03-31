@@ -1209,6 +1209,7 @@ function remove_shell2http() {
   rm /usr/local/bin/shell2http
   rm /etc/prometheus/notify_services.sh
   rm /etc/prometheus/.env.shell2http
+  rm /etc/prometheus/.tmp.shell2http
 
   deluser --remove-home shell2http
 
