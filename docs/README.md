@@ -50,7 +50,7 @@ PromManager does not claim to allow all possible configurations with prometheus'
   - *Microsoft Teams*
   - *Telegram*
   - *SMS*
-  - *And many more thanks to [PingMe CLI](https://pingme.lmno.pk/#/services) Integration*
+  - *And many more thanks to [PingMe CLI](https://pingme.lmno.pk/#/?id=supported-services) Integration*
 
 ## Installation
     curl -OL https://raw.githubusercontent.com/matbgn/prommanager/master/prommanager
@@ -106,5 +106,5 @@ This project is based on those amazing projects:
 - [Prometheus](https://github.com/prometheus/) (Apache License 2.0)
 - [shdotenv](https://github.com/ko1nksm/shdotenv) (MIT License)
 - [shell2http](https://github.com/msoap/shell2http) (MIT License)
-- [PingMe CLI](https://github.com/nikoksr/notify) (MIT License)
+- [PingMe CLI](https://github.com/kha7iq/pingme) (MIT License)
 
