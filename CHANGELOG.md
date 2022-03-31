@@ -72,3 +72,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [3.0.0]: https://github.com/matbgn/prommanager/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/matbgn/prommanager/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/matbgn/prommanager/releases/tag/v1.0.0
+
+    GH CLI: gh release create vX.0.0 -t "v.X.0.0" -n "See [CHANGELOG.md](CHANGELOG.md) for details" prommanager
