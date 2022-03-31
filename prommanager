@@ -910,7 +910,7 @@ function download_shell2http() {
   curl -OL https://github.com/msoap/shell2http/releases/download/v"$SHELL2HTTP_VERSION"/shell2http_"$SHELL2HTTP_VERSION"_linux_"$SYSTEM_ARCH".tar.gz
   echo
 
-  tar xfz shell2http_*.tar.gz &> /dev/null
+  tar xfz shell2http_*.tar.gz shell2http &> /dev/null
   cp shell2http /usr/local/bin
   chown shell2http:shell2http /usr/local/bin/shell2http
 
@@ -1019,7 +1019,7 @@ function download_pingme() {
   curl -OL https://github.com/kha7iq/pingme/releases/download/v"$PINGME_VERSION"/pingme_Linux_"$PINGME_SYSTEM_ARCH".tar.gz
   echo
 
-  tar xfz pingme_*.tar.gz &> /dev/null
+  tar xfz pingme_*.tar.gz pingme &> /dev/null
   cp pingme /usr/local/bin
   chown pingme:pingme /usr/local/bin/pingme
 
