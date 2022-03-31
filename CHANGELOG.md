@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
+### Added
+- Add latest release as preferred download channel (stability)
 
 ## [4.0.0] - 2022-04-01
 ### Added

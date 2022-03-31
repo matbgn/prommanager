@@ -53,11 +53,26 @@ PromManager does not claim to allow all possible configurations with prometheus'
   - *And many more thanks to [PingMe CLI](https://pingme.lmno.pk/#/?id=supported-services) Integration*
 
 ## Installation
+For latest stable version use following command:
+
+    curl -s https://api.github.com/repos/matbgn/prommanager/releases/latest | awk -F \" -v RS="," '/browser_download_url/ {print $(NF-1)}' | xargs curl -OL
+    chmod +x prommanager
+    ./prommanager -h
+
+For nightly deployment use:
+
     curl -OL https://raw.githubusercontent.com/matbgn/prommanager/master/prommanager
     chmod +x prommanager
     ./prommanager -h
 
 ## Usage
+<table border="0">
+  <tr>
+    <td>:bulb:</td>
+    <td>Pay attention that this script needs root access for almost all its operations</td>
+  </tr>
+</table>
+
 Get helper by running this command:
 
     sudo ./prommanager --help
