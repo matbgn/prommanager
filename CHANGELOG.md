@@ -1,36 +1,74 @@
-# 4.0.0
-- Since v4 add script as released asset for retro compatibility issues
-- Rename project to be more compliant with Linux Trademark usage
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+*Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
+
+## [4.0.0] - 2022-04-01
+### Added
+- Since v4+ this changelog will be based on [Keep a Changelog](https://keepachangelog.com/en/)
+- Since v4+ add script as released asset for retro compatibility issues
 - Add communication services based on PingMe CLI (https://github.com/kha7iq/pingme)
 - Supported bridges are Microsoft Teams, Telegram, Slack, etc. see PingMe for full list
-- Retrieve .env values via shdotenv library for more robustness (https://github.com/ko1nksm/shdotenv) 
-- [WARNING] Breaking change: for prometheus full flag (seems to be the last breaking change for existing flags)
 
-# 3.0.0
-- Ensure version numbers are present on fresh install
-- Update corresponding command on README.md
+### Changed
+- Rename project to be more compliant with Linux Trademark usage
+- Retrieve .env values via shdotenv library for more robustness (https://github.com/ko1nksm/shdotenv) 
+
+### Removed
+- [WARNING] Breaking change: prometheus full flag use complete word for clarity (seems to be the last breaking change for existing flags)
+
+## [3.0.0] - 2022-03-15
+### Added
 - Add blackbox_exporter
 - Set ipv4 as preferred protocol for blackbox_exporter
 - Add sample list of URL to be watched
 - Add Alertmanager
-- Split config and init for further developments
 - Add an update config option to edit sensitive data in an .env file
+
+### Changed
+- Update corresponding command on README.md
+- Split config and init for further developments
+
+### Fixed
+- Ensure version numbers are present on fresh install
+
+### Removed
 - [WARNING] Breaking changes: arguments for install, exec, kill, status switched to lowercase for single letter
 
-# 2.0.0
+## [2.0.0] - 2022-03-14
+### Added
 - Add an adaptative verbose mode (-vv for WARN, -vvv for INFO, -vvvv for DEBUG)
-- Improve versions retrieving
 - Check for argument when mandatory
-- [WARNING] Breaking change: Split display and retrieve options
 - Make get and display versions working with apps flags
 - Add possibility to start/stop apps separately
-- Retrieve status for each app independently via parameter
 - Add possibility to remove apps independently of each other
 
-# 1.0.0
-- Rewrite option argument parsing
-- [WARNING] Breaking changes for script arguments
-- Use lsof in favour of netstat for listening open ports
+### Changed
+- Improve versions retrieving
+- Retrieve status for each app independently via parameter
+
+### Removed
+- [WARNING] Breaking change: Split display and retrieve options for services versions
+
+## [1.0.0] - 2022-03-14
+### Added
 - Add sudo rights control at launch
 - Overwrite version to be installed if tag curl OK
 - [INFO] Introduction of first [SemVer](https://semver.org/) version
+
+### Changed
+- Rewrite option argument parsing
+- Use lsof in favour of netstat for listening open ports
+
+### Removed
+- [WARNING] Breaking changes for script arguments
+
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/matbgn/prommanager/compare/v3.0.0...v4.0.0
+[3.0.0]: https://github.com/matbgn/prommanager/compare/v2.0.0...v3.0.0
+[2.0.0]: https://github.com/matbgn/prommanager/compare/v1.0.0...v2.0.0
+[1.0.0]: https://github.com/matbgn/prommanager/releases/tag/v1.0.0
