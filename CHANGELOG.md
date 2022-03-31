@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Improve .env.example
 - Make usage help context more compact 
 
+### Fixed 
+- Fix message if shell2http is not installed
+
 ## [4.0.0] - 2022-04-01
 ### Added
 - Since v4+ this changelog will be based on [Keep a Changelog](https://keepachangelog.com/en/)
