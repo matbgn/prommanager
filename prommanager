@@ -21,6 +21,7 @@ NODE_TRIGGER=false
 BLACKBOX_TRIGGER=false
 ALERTMANAGER_TRIGGER=false
 PROMETHEUS_TRIGGER=false
+SHELL2HTTP_TRIGGER=false
 
 DISPLAY_VERSIONS=false
 
@@ -31,7 +32,7 @@ INSTALL=false
 NODE_EXPORTER_PORT=9500
 BLACKBOX_EXPORTER_PORT=9510
 ALERTMANAGER_PORT=9550
-SHELL2HTTPAPI_PORT=9560
+SHELL2HTTP_PORT=9560
 PROMETHEUS_PORT=9590
 
 # Retrieve list of URLs to watch from .env file in form of:
@@ -50,7 +51,7 @@ ALERT_EMAIL_SMTP_USER=""
 # ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
 ALERT_EMAIL_SMTP_PASS=""
 
-ALERT_WEBHOOK_URL="http://localhost:$SHELL2HTTPAPI_PORT/notify"
+ALERT_WEBHOOK_URL="http://localhost:$SHELL2HTTP_PORT/notify"
 
 EXECUTE=false
 KILL_APPS=false
@@ -173,6 +174,7 @@ function flags() {
         BLACKBOX_TRIGGER=true
         PROMETHEUS_TRIGGER=true
         ALERTMANAGER_TRIGGER=true
+        SHELL2HTTP_TRIGGER=true
         shift # argument
         ;;
       -n|--node)
@@ -216,6 +218,17 @@ function flags() {
         check_options_mandatory "$2"
         PROMETHEUS_VERSION="$2"
         PROMETHEUS_TRIGGER=true
+        shift # argument
+        shift # value
+        ;;
+      -c|--cgi)
+        SHELL2HTTP_TRIGGER=true
+        shift # argument
+        ;;
+      -C)
+        check_options_mandatory "$2"
+        SHELL2HTTP_VERSION="$2"
+        SHELL2HTTP_TRIGGER=true
         shift # argument
         shift # value
         ;;
@@ -332,6 +345,28 @@ function retrieve_alertmanager_version() {
 }
 
 
+function retrieve_shell2http_version() {
+    if [ $LOG_LEVEL -gt 3 ]
+    then
+      echo '[DEBUG] Retrieving shell2http version...'
+    fi
+
+    SHELL2HTTP_VERSION_CURLED="$(curl -s https://api.github.com/repos/msoap/shell2http/releases/latest |
+    grep 'tag_name' | awk '{printf substr($2, 3, length($2)-4)}')"
+
+    if [[ -z $SHELL2HTTP_VERSION_CURLED ]]
+    then
+      echo '[ERROR] System was not able to retrieve shell2http version check your internet connection'
+      exit 1
+    fi
+
+    if [ $LOG_LEVEL -gt 2 ]
+    then
+      echo "[INFO] shell2http version retrieved: " "$SHELL2HTTP_VERSION_CURLED"
+    fi
+}
+
+
 function retrieve_prometheus_version() {
     if [ $LOG_LEVEL -gt 3 ]
     then
@@ -373,6 +408,12 @@ function ensure_versions() {
     ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION_CURLED
   fi
 
+  if [ "${#SHELL2HTTP_VERSION}" -lt 5 ] || ($SHELL2HTTP_TRIGGER && $UPDATE_VERSIONS)
+  then
+    retrieve_shell2http_version
+    SHELL2HTTP_VERSION=$SHELL2HTTP_VERSION_CURLED
+  fi
+
   if [ "${#PROMETHEUS_VERSION}" -lt 5 ] || ($PROMETHEUS_TRIGGER && $UPDATE_VERSIONS)
   then
     retrieve_prometheus_version
@@ -388,6 +429,7 @@ NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION
 BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION
 ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION
 PROMETHEUS_VERSION=$PROMETHEUS_VERSION
+SHELL2HTTP_VERSION=$SHELL2HTTP_VERSION
 EOM
 
   chmod 666 .versions
@@ -458,6 +500,25 @@ function display_alertmanager_versions() {
 }
 
 
+function display_shell2http_versions() {
+  if $DEBUG_OFFLINE; then SHELL2HTTP_VERSION_CURLED=""; else retrieve_shell2http_version; fi
+  if [ -z "$SHELL2HTTP_VERSION_CURLED" ]
+  then
+    SHELL2HTTP_VERSION_CURLED="You're offline"
+  fi
+  printf "Highest available version for shell2http is: %s\n" "$SHELL2HTTP_VERSION_CURLED"
+
+  printf "Installation version for shell2http will be: %s\n" "$SHELL2HTTP_VERSION"
+
+  INSTALLED_SHELL2HTTP_VERSION=$(/usr/local/bin/shell2http --version 2>&1)
+  if [ "${#INSTALLED_SHELL2HTTP_VERSION}" -lt 5 ]
+  then
+    INSTALLED_SHELL2HTTP_VERSION="Not installed"
+  fi
+  printf "Actual version of shell2http is: %s\n\n" "$INSTALLED_SHELL2HTTP_VERSION"
+}
+
+
 function display_prometheus_versions() {
   if $DEBUG_OFFLINE; then PROMETHEUS_VERSION_CURLED=""; else retrieve_prometheus_version; fi
   if [ -z "$PROMETHEUS_VERSION_CURLED" ]
@@ -482,6 +543,7 @@ function display_versions() {
   if $NODE_TRIGGER; then display_node_versions; fi
   if $BLACKBOX_TRIGGER; then display_blackbox_versions; fi
   if $ALERTMANAGER_TRIGGER; then display_alertmanager_versions; fi
+  if $SHELL2HTTP_TRIGGER; then display_shell2http_versions; fi
   if $PROMETHEUS_TRIGGER; then display_prometheus_versions; fi
 }
 
@@ -782,6 +844,112 @@ function install_alertmanager() {
 }
 
 
+function download_shell2http() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Download shell2http\n"; fi
+  useradd --no-create-home --shell /bin/false shell2http &> /dev/null || grep shell2http /etc/passwd
+  test -f shell2http_"$SHELL2HTTP_VERSION"_linux_"$SYSTEM_ARCH".tar.gz ||
+  curl -OL https://github.com/prometheus/shell2http/releases/download/v"$SHELL2HTTP_VERSION"/shell2http_"$SHELL2HTTP_VERSION"_linux_"$SYSTEM_ARCH".tar.gz
+  echo
+
+  tar xfz shell2http-*.tar.gz &> /dev/null
+  cp shell2http /usr/local/bin
+  chown shell2http:shell2http /usr/local/bin/shell2http
+
+  if [ $LOG_LEVEL -lt 3 ]; then rm -rf shell2http*; fi
+
+  printf "shell2http downloaded\n\n"
+}
+
+
+function config_shell2http() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Config shell2http\n"; fi
+
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Storing actual env to be accessible by shell2http on further alerts\n"; fi
+
+  mkdir /etc/prometheus &> /dev/null
+  shdotenv -e .env --noexport > /etc/prometheus/.env.shell2http
+
+  chown shell2http:shell2http /etc/prometheus/.env.shell2http &> /dev/null
+
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Prepare script for notification by shell2http\n"; fi
+  cat > /etc/prometheus/notify_services.sh << EOM
+#!/bin/bash
+cat >.tmp
+
+eval "\$(/usr/local/bin/shdotenv -e /etc/prometheus/.env.shell2http)"
+
+export title="Status: \$(jq -r '.status' .tmp) |
+Alert: \$(jq -r '.commonLabels.alertname' .tmp) |
+Severity: \$(jq -r '.commonLabels.severity' .tmp)"
+
+export msg="Instance: \$(jq -r '.commonLabels.instance' .tmp) |
+Description: \$(jq -r '.commonAnnotations.description' .tmp) |
+Summary: \$(jq -r '.commonAnnotations.summary' .tmp)"
+
+eval "set -- \$NOTIFY_SERVICES"
+while [ \$# -gt 0 ]; do
+  /usr/local/bin/pingme "\$1" \
+  --title "\$title" \
+  --msg "\$msg"
+  shift
+done
+
+rm .tmp
+EOM
+
+  chmod 755 /etc/prometheus/notify_services.sh
+  chown shell2http:shell2http /etc/prometheus/notify_services.sh &> /dev/null
+}
+
+
+function init_shell2http() {
+  if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Setting shell2http daemon\n"; fi
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+
+    cat > /etc/systemd/system/shell2http.service <<EOM
+[Unit]
+Description=shell2http
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=shell2http
+Group=shell2http
+Type=simple
+ExecStart=/usr/local/bin/shell2http \
+  -port=${SHELL2HTTP_PORT} -cgi /notify '/etc/prometheus/notify_services.sh'
+
+[Install]
+WantedBy=multi-user.target
+EOM
+
+
+    systemctl daemon-reload
+    systemctl enable shell2http
+  else
+    update-rc.d shell2http defaults
+    if [ $? -ne 0 ]
+    then
+      printf "You have to install shell2http daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
+      printf "$ pleaserun --user shell2http --group shell2http \\\n--install /usr/local/bin/shell2http -port=%s -cgi /notify '/etc/prometheus/notify_services.sh'\n\n" "$SHELL2HTTP_PORT"
+    fi
+  fi
+}
+
+
+function install_shell2http() {
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Starting shell2http installation'; fi
+  download_shell2http
+  config_shell2http
+  init_shell2http
+  if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] shell2http installed'; fi
+}
+
+
 function set_prometheus_folders() {
   mkdir /etc/prometheus &> /dev/null
   mkdir /var/lib/prometheus &> /dev/null
@@ -928,6 +1096,7 @@ function install_apps() {
   if $NODE_TRIGGER; then install_node_exporter; fi
   if $BLACKBOX_TRIGGER; then install_blackbox_exporter; fi
   if $ALERTMANAGER_TRIGGER; then install_alertmanager; fi
+  if $SHELL2HTTP_TRIGGER; then install_shell2http; fi
   if $PROMETHEUS_TRIGGER; then install_prometheus; fi
 }
 
@@ -936,6 +1105,7 @@ function start_apps() {
   if $NODE_TRIGGER; then service node_exporter start; fi
   if $BLACKBOX_TRIGGER; then service blackbox_exporter start; fi
   if $ALERTMANAGER_TRIGGER; then service alertmanager start; fi
+  if $SHELL2HTTP_TRIGGER; then service shell2http start; fi
   if $PROMETHEUS_TRIGGER; then service prometheus start; fi
 }
 
@@ -944,6 +1114,7 @@ function stop_apps() {
   if $NODE_TRIGGER; then service node_exporter stop; fi
   if $BLACKBOX_TRIGGER; then service blackbox_exporter stop; fi
   if $ALERTMANAGER_TRIGGER; then service alertmanager stop; fi
+  if $SHELL2HTTP_TRIGGER; then service shell2http stop; fi
   if $PROMETHEUS_TRIGGER; then service prometheus stop; fi
 }
 
@@ -963,6 +1134,11 @@ function get_alertmanager_status() {
 }
 
 
+function get_shell2http_status() {
+  service shell2http status | awk 'NR==3 {printf "Status of CGI SHELL2HTTP API: %s\n", $2}'
+}
+
+
 function get_prometheus_status() {
   service prometheus status | awk 'NR==3 {printf "Status of Prometheus: %s\n", $2}'
 }
@@ -972,6 +1148,7 @@ function get_status() {
   if $NODE_TRIGGER; then get_node_status; fi
   if $BLACKBOX_TRIGGER; then get_blackbox_status; fi
   if $ALERTMANAGER_TRIGGER; then get_alertmanager_status; fi
+  if $SHELL2HTTP_TRIGGER; then get_shell2http_status; fi
   if $PROMETHEUS_TRIGGER; then get_prometheus_status; fi
   echo
 }
@@ -1034,6 +1211,27 @@ function remove_alertmanager() {
 }
 
 
+function remove_shell2http() {
+  rm /usr/local/bin/shell2http
+  rm /etc/prometheus/notify_services.sh
+  rm /etc/prometheus/.env.shell2http
+
+  deluser --remove-home shell2http
+
+  systemctl >/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]
+  then
+    rm /etc/systemd/system/shell2http.service
+    systemctl daemon-reload
+  else
+    rm /etc/init.d/shell2http
+    rm /etc/default/shell2http
+    update-rc.d shell2http remove
+  fi
+}
+
+
 function remove_prometheus() {
   rm /usr/local/bin/prometheus
   rm /usr/local/bin/promtool
@@ -1060,6 +1258,7 @@ function remove_apps() {
   if $NODE_TRIGGER; then remove_node_exporter; fi
   if $BLACKBOX_TRIGGER; then remove_blackbox_exporter; fi
   if $ALERTMANAGER_TRIGGER; then remove_alertmanager; fi
+  if $SHELL2HTTP_TRIGGER; then remove_shell2http; fi
   if $PROMETHEUS_TRIGGER; then remove_prometheus; fi
 }
 
@@ -1091,7 +1290,7 @@ function retrieve_env_datas() {
   if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] shdotenv installed'; fi
 
   if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Load env file'; fi
-  eval "$(/usr/local/bin/shdotenv )"
+  eval "$(/usr/local/bin/shdotenv -e .env)"
 }
 
 
@@ -1114,6 +1313,7 @@ function main() {
   if $UPDATE_CONFIGS; then
     config_alertmanager
     config_alert_rules
+    config_shell2http
     config_prometheus
   fi
 
