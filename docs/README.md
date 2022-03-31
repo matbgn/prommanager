@@ -49,7 +49,7 @@ PromManager does not claim to allow all possible configurations with prometheus'
   - *Emails*
   - *Microsoft Teams*
   - *Telegram*
-  - *Slack*
+  - *SMS*
   - *And many more thanks to [PingMe CLI](https://pingme.lmno.pk/#/services) Integration*
 
 ## Installation
