@@ -6,9 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
+
+## [4.0.1] - 2022.04.01
 ### Added
 - Add latest release as preferred download channel (stability)
-- Add possibility to override ports used for each service
+- Add possibility to override ports used for each service via .env file
 
 ### Changed
 - Improve .env.example
@@ -16,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed 
 - Fix message if shell2http is not installed
+- Fix missing jq on certain installation
 
 ## [4.0.0] - 2022-04-01
 ### Added
@@ -77,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v4.0.1...HEAD
+[4.0.1]: https://github.com/matbgn/prommanager/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/matbgn/prommanager/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/matbgn/prommanager/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/matbgn/prommanager/compare/v1.0.0...v2.0.0

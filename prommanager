@@ -886,6 +886,19 @@ function download_shell2http() {
 }
 
 
+function download_jq() {
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Download jq if needed\n"; fi
+
+  test -f /usr/local/bin/jq || curl -OL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 &> /dev/null
+
+  mv jq-linux64 /usr/local/bin/jq &> /dev/null
+  chown shell2http:shell2http /usr/local/bin/jq  &> /dev/null
+  chmod 755 /usr/local/bin/jq
+
+  if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] jq installed'; fi
+}
+
+
 function config_shell2http() {
   if [ $LOG_LEVEL -gt 2 ]; then printf "[INFO] Config shell2http\n"; fi
 
@@ -897,6 +910,8 @@ function config_shell2http() {
 
   chown shell2http:shell2http /etc/prometheus/.env.shell2http &> /dev/null
   chown shell2http:shell2http /etc/prometheus/.tmp.shell2http &> /dev/null
+
+  download_jq
 
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Prepare script for notification by shell2http\n"; fi
   cat > /etc/prometheus/notify_services.sh << EOM
@@ -1272,6 +1287,7 @@ function remove_alertmanager() {
 
 function remove_shell2http() {
   rm /usr/local/bin/shell2http
+  rm /usr/local/bin/jq
   rm /etc/prometheus/notify_services.sh
   rm /etc/prometheus/.env.shell2http
   rm /etc/prometheus/.tmp.shell2http
