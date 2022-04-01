@@ -19,3 +19,7 @@
 
     shell2http_url=http://localhost:9560/notify
     curl -XPOST $shell2http_url -d '{"receiver":"alert\\.services","status":"firing","alerts":[{"status":"firing","labels":{"alertname":"MY_ALERT_XX","instance":"0","job":"http_probe","severity":"critical"},"annotations":{"description":"Probe failed\n  VALUE = 0\n  LABELS = map[__name__:probe_success instance:http://localhost/ job:http_probe]","summary":"HTTP probe failed (instance http://localhost/)"},"startsAt":"2022-04-01T11:41:16.014Z","endsAt":"2022-04-01T11:41:46.014Z","generatorURL":"http://localhost:9590/graph","fingerprint":"b13d2f13a19f6891"}],"groupLabels":{"alertname":"MY_ALERT_XX"},"commonLabels":{"alertname":"MY_ALERT_XX","instance":"0","job":"http_probe","severity":"critical"},"commonAnnotations":{"description":"Probe failed\n  VALUE = 0\n  LABELS = map[__name__:probe_success instance:http://localhost/ job:http_probe]","summary":"HTTP probe failed (instance http://localhost/)"},"externalURL":"http://localhost:9550","version":"4","groupKey":"{}:{alertname=\"MY_ALERT_XX\"}","truncatedAlerts":0}'
+
+## Debug services using
+
+     sudo journalctl -r -u shell2http
