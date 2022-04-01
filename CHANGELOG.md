@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
 
+## [4.0.2] - 2022.04.01
+### Fixed 
+- Fix alerts containing multiple alerts in it
+
 ## [4.0.1] - 2022.04.01
 ### Added
 - Add latest release as preferred download channel (stability)
@@ -80,7 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v4.0.1...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v4.0.2...HEAD
+[4.0.2]: https://github.com/matbgn/prommanager/compare/v4.0.1...v4.0.2
 [4.0.1]: https://github.com/matbgn/prommanager/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/matbgn/prommanager/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/matbgn/prommanager/compare/v2.0.0...v3.0.0

@@ -925,16 +925,22 @@ export title="Status: \$(/usr/local/bin/jq -r '.status' \$ALERT_TMP_FILE) |
 Alert: \$(/usr/local/bin/jq -r '.commonLabels.alertname' \$ALERT_TMP_FILE) |
 Severity: \$(/usr/local/bin/jq -r '.commonLabels.severity' \$ALERT_TMP_FILE)"
 
-export msg="Instance: \$(/usr/local/bin/jq -r '.commonLabels.instance' \$ALERT_TMP_FILE) |
-Description: \$(/usr/local/bin/jq -r '.commonAnnotations.description' \$ALERT_TMP_FILE) |
-Summary: \$(/usr/local/bin/jq -r '.commonAnnotations.summary' \$ALERT_TMP_FILE)"
+alerts_array_length=\$((\$(jq '.alerts | length' \$ALERT_TMP_FILE)-1))
 
-eval "set -- \$NOTIFY_SERVICES"
-while [ \$# -gt 0 ]; do
-  /usr/local/bin/pingme "\$1" \
-  --title "\$title" \
-  --msg "\$msg"
-  shift
+# shellcheck disable=SC2175
+for i in \$( eval echo {0..\$alerts_array_length} )
+do
+  export msg="Instance: \$(jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].labels.instance' \$ALERT_TMP_FILE) |
+Description: \$(jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].annotations.description' \$ALERT_TMP_FILE) |
+Summary: \$(jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].annotations.summary' \$ALERT_TMP_FILE)"
+
+  eval "set -- \$NOTIFY_SERVICES"
+  while [ \$# -gt 0 ]; do
+    /usr/local/bin/pingme "\$1" \
+    --title "\$title" \
+    --msg "\$msg"
+    shift
+  done
 done
 EOM
 
