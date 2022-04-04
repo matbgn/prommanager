@@ -838,7 +838,7 @@ groups:
       summary: Host out of disk space (instance {{ \$labels.instance }})
       description: "Disk is almost full (lower than 20% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostNodeOvertemperatureAlarm
-    expr: node_hwmon_temp_celsius > 60
+    expr: node_hwmon_temp_celsius > 70
     for: 0m
     labels:
       severity: critical
