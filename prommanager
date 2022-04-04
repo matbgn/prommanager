@@ -820,7 +820,7 @@ groups:
       severity: warning
     annotations:
       summary: Host high CPU load (instance {{ \$labels.instance }})
-      description: "CPU load is > 80%\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: "CPU load is greater than 80%\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostOutOfMemory
     expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 15
     for: 2m
@@ -828,7 +828,7 @@ groups:
       severity: warning
     annotations:
       summary: Host out of memory (instance {{ \$labels.instance }})
-      description: "Node memory is filling up (< 15% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: "Node memory is filling up (lower than 15% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostOutOfDiskSpace
     expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 20 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
     for: 2m
@@ -836,7 +836,7 @@ groups:
       severity: warning
     annotations:
       summary: Host out of disk space (instance {{ \$labels.instance }})
-      description: "Disk is almost full (< 20% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: "Disk is almost full (lower than 20% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostNodeOvertemperatureAlarm
     expr: node_hwmon_temp_celsius > 60
     for: 0m
