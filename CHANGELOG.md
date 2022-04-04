@@ -6,9 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
+
+## [4.1.0] - 2022.04.05
 ### Added
 - Add alerts for following key values: CPU Load (>80%), RAM (>85%), Storage (>80%), node temperature (>70°C when available)
-- Add originating server on message
+- Add originating server on messages
 ### Fixed
 - Fix sensitivity for HTTP Probe failure
 
@@ -90,7 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v4.0.2...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/matbgn/prommanager/compare/v4.0.2...v4.1.0
 [4.0.2]: https://github.com/matbgn/prommanager/compare/v4.0.1...v4.0.2
 [4.0.1]: https://github.com/matbgn/prommanager/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/matbgn/prommanager/compare/v3.0.0...v4.0.0
