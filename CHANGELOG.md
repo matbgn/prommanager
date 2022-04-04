@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
+### Fixed
+- Fix sensitivity for HTTP Probe failure
+
 
 ## [4.0.2] - 2022.04.01
 ### Fixed 

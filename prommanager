@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v4.0.2!"
+MOTD="Welcome to Prometheus manager v4.0.3!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -806,7 +806,7 @@ groups:
       description: "{{ \$labels.instance }} of job {{ \$labels.job }} has been down for more than 5 minutes."
   - alert: HTTPProbeFailed
     expr: probe_success == 0
-    for: 0m
+    for: 5m
     labels:
       severity: critical
     annotations:
