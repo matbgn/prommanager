@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v4.0.3!"
+MOTD="Welcome to Prometheus manager v4.1.0!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -611,6 +611,7 @@ Type=simple
 ExecStart=/usr/local/bin/node_exporter \
   --collector.systemd \
   --collector.processes \
+  --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/) \
   --web.listen-address=:${NODE_EXPORTER_PORT}
 
 [Install]
@@ -812,6 +813,40 @@ groups:
     annotations:
       summary: HTTP probe failed (instance {{ \$labels.instance }})
       description: "Probe failed\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+  - alert: HostHighCpuLoad
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+    for: 0m
+    labels:
+      severity: warning
+    annotations:
+      summary: Host high CPU load (instance {{ \$labels.instance }})
+      description: "CPU load is > 80%\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+  - alert: HostOutOfMemory
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 15
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Host out of memory (instance {{ \$labels.instance }})
+      description: "Node memory is filling up (< 15% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+  - alert: HostOutOfDiskSpace
+    expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 20 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Host out of disk space (instance {{ \$labels.instance }})
+      description: "Disk is almost full (< 20% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+  - alert: HostNodeOvertemperatureAlarm
+    expr: node_hwmon_temp_celsius > 60
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: Host node overtemperature alarm (instance {{ \$labels.instance }})
+      description: "Physical node temperature alarm triggered\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+
+
 EOM
 }
 
@@ -923,16 +958,17 @@ eval "\$(/usr/local/bin/shdotenv -e /etc/prometheus/.env.shell2http)"
 
 export title="Status: \$(/usr/local/bin/jq -r '.status' \$ALERT_TMP_FILE) |
 Alert: \$(/usr/local/bin/jq -r '.commonLabels.alertname' \$ALERT_TMP_FILE) |
-Severity: \$(/usr/local/bin/jq -r '.commonLabels.severity' \$ALERT_TMP_FILE)"
+Severity: \$(/usr/local/bin/jq -r '.commonLabels.severity' \$ALERT_TMP_FILE) |
+Originating server: \$(/usr/local/bin/jq -r '.externalURL | match("http:\/\/(.+):").captures[0].string' \$ALERT_TMP_FILE)"
 
-alerts_array_length=\$((\$(jq '.alerts | length' \$ALERT_TMP_FILE)-1))
+alerts_array_length=\$((\$(/usr/local/bin/jq '.alerts | length' \$ALERT_TMP_FILE)-1))
 
 # shellcheck disable=SC2175
 for i in \$( eval echo {0..\$alerts_array_length} )
 do
-  export msg="Instance: \$(jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].labels.instance' \$ALERT_TMP_FILE) |
-Description: \$(jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].annotations.description' \$ALERT_TMP_FILE) |
-Summary: \$(jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].annotations.summary' \$ALERT_TMP_FILE)"
+  export msg="Instance: \$(/usr/local/bin/jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].labels.instance' \$ALERT_TMP_FILE) |
+Description: \$(/usr/local/bin/jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].annotations.description' \$ALERT_TMP_FILE) |
+Summary: \$(/usr/local/bin/jq -r --argjson INDEX \$((i)) '.alerts[\$INDEX].annotations.summary' \$ALERT_TMP_FILE)"
 
   eval "set -- \$NOTIFY_SERVICES"
   while [ \$# -gt 0 ]; do
@@ -946,6 +982,7 @@ EOM
 
   chmod 755 /etc/prometheus/notify_services.sh
   chown shell2http:shell2http /etc/prometheus/notify_services.sh &> /dev/null
+  if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Notify services script applied\n"; fi
 }
 
 

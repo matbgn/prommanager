@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
+### Added
+- Add alerts for following key values: CPU Load (>80%), RAM (>85%), Storage (>80%), node temperature (>60°C when available)
+- Add originating server on message
 ### Fixed
 - Fix sensitivity for HTTP Probe failure
 
