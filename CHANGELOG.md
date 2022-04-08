@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
+### Add
+- Add possibility to adapt repeating alerts interval with ALERTMANAGER_REPEAT_INTERVAL and fix more standards values for alertmanager triggers after this validation phase 
 
 ## [4.1.0] - 2022.04.05
 ### Added

@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v4.1.0!"
+MOTD="Welcome to Prometheus manager v4.2.0!"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -27,6 +27,8 @@ BLACKBOX_EXPORTER_PORT=9510
 ALERTMANAGER_PORT=9550
 SHELL2HTTP_PORT=9560
 PROMETHEUS_PORT=9590
+
+ALERTMANAGER_REPEAT_INTERVAL=4h
 
 EXECUTE=false
 KILL_APPS=false
@@ -763,14 +765,14 @@ route:
   # How long to initially wait to send a notification for a group
   # of alerts. Allows to wait for an inhibiting alert to arrive or collect
   # more initial alerts for the same group. (Usually ~0s to few minutes.)
-  group_wait: 3s
+  group_wait: 10s
   # How long to wait before sending a notification about new alerts that
   # are added to a group of alerts for which an initial notification has
   # already been sent. (Usually ~5m or more.)
-  group_interval: 5s
+  group_interval: 5m
   # How long to wait before sending a notification again if it has already
   # been sent successfully for an alert. (Usually ~3h or more).
-  repeat_interval: 1h
+  repeat_interval: $ALERTMANAGER_REPEAT_INTERVAL
   receiver: 'alert.services'
 receivers:
 - name: 'alert.services'
