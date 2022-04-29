@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
 ### Add
 - Add possibility to adapt repeating alerts interval with ALERTMANAGER_REPEAT_INTERVAL and fix more standards values for alertmanager triggers after this validation phase 
+- Add possibility to adapt Temperature threshold for alarm firing with ALERTMANAGER_TEMPERATURE_THRESHOLD
 
 ## [4.1.0] - 2022.04.05
 ### Added

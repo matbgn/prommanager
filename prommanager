@@ -29,6 +29,7 @@ SHELL2HTTP_PORT=9560
 PROMETHEUS_PORT=9590
 
 ALERTMANAGER_REPEAT_INTERVAL=4h
+ALERTMANAGER_TEMPERATURE_THRESHOLD=77
 
 EXECUTE=false
 KILL_APPS=false
@@ -840,7 +841,7 @@ groups:
       summary: Host out of disk space (instance {{ \$labels.instance }})
       description: "Disk is almost full (lower than 20% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostNodeOvertemperatureAlarm
-    expr: node_hwmon_temp_celsius > 70
+    expr: node_hwmon_temp_celsius > $ALERTMANAGER_TEMPERATURE_THRESHOLD
     for: 0m
     labels:
       severity: critical
