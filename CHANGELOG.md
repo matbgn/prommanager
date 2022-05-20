@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add possibility to adapt repeating alerts interval with ALERTMANAGER_REPEAT_INTERVAL and fix more standards values for alertmanager triggers after this validation phase 
 - Add possibility to adapt Temperature threshold for alarm firing with ALERTMANAGER_TEMPERATURE_THRESHOLD
 
+### Changed
+- Improve documentation
+
 ## [4.1.0] - 2022.04.05
 ### Added
 - Add alerts for following key values: CPU Load (>80%), RAM (>85%), Storage (>80%), node temperature (>70°C when available)
