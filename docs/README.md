@@ -170,7 +170,7 @@ Or specify which version you will install by:
 
 ## Architecture design
 
-The architecture's design is mainly based on the advices of this book [Bastos, Joel and Araujo, Pedro. (2019) __Hands-On Infrastructure Monitoring with Prometheus: Implement and scale queries, dashboards, and alerting across machines and containers__. Birmingham, UK: Packt Publishing.] and is intended as following:
+The architecture's design is mainly based on the advices of this book [Bastos, Joel and Araujo, Pedro. (2019) __Hands-On Infrastructure Monitoring with Prometheus: Implement and scale queries, dashboards, and alerting across machines and containers__. Birmingham, UK: Packt Publishing.](https://www.amazon.de/-/en/dp/1789612349?ie=UTF8&n=530484031) and is intended as following:
 
 ![Architecture_desing](architecture.drawio.svg)
 
