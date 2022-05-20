@@ -39,7 +39,7 @@ The main advantage is to facilitate maintenance trough multiple servers.
 
 PromManager does not claim to allow all possible configurations with prometheus' ecosystem, but remains a good starting point for a simple and quick deployment.
 
-## Supported services
+## Out-of-the-Box integrated services
 
 - *Prometheus*
 - *Node Exporter*
@@ -134,7 +134,7 @@ Specify which one you want with (default is amd64):
 
     sudo ./prommanager --arch arm64 [--<flags>]
 
-### Pull latest release versions
+### Pull latest services versions
 Get info with:
 
     sudo ./prommanager --versions --all
@@ -154,6 +154,13 @@ Or specify which version you will install by:
 ### Get actual services status
 
     sudo ./prommanager --status --all
+
+
+## Architecture design
+
+The architecture's design is mainly based on the advices of this book [Bastos, Joel and Araujo, Pedro. (2019) __Hands-On Infrastructure Monitoring with Prometheus: Implement and scale queries, dashboards, and alerting across machines and containers__. Birmingham, UK: Packt Publishing.] and is intended as following:
+
+![Architecture_desing](architecture.drawio.svg)
 
 ## Miscellaneous
 
