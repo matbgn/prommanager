@@ -65,6 +65,58 @@ For nightly deployment use:
     chmod +x prommanager
     ./prommanager -h
 
+## Configuration
+
+Prommanager requires a very minimal configuration to work, but aditionnal ones gives flexibility and comfort (see below)
+
+All the communications services have corresponding environment variables associated with it. You
+have to provide those within the .env file. See the [PingMe CLI Documentation Page](https://pingme.lmno.pk/#/services) for more details.
+
+To activate configuration start by moving the provided .env.example as .env next to prommanager executable and edit it as needed :
+
+```bash
+# [MANDATORY] Configure email alert via smtp server
+# ALERT_EMAIL_TO="test@example.com,toto@example.com"
+ALERT_EMAIL_TO=""
+# ALERT_EMAIL_SMTP_FROM="smtp_allowed_sender@example.com"
+ALERT_EMAIL_SMTP_FROM=""
+# ALERT_EMAIL_SMTP_HOSTNAME_AND_PORT="smtp.gmail.com:587"
+ALERT_EMAIL_SMTP_HOSTNAME_AND_PORT=""
+# ALERT_EMAIL_SMTP_USER="username" // in some cases it's the same as ALERT_EMAIL_SMTP_FROM
+ALERT_EMAIL_SMTP_USER=""
+# ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
+ALERT_EMAIL_SMTP_PASS=""
+
+# [OPTIONAL] Set linux architecture will be overridden by CLI flag e.g. --arch arm64
+SYSTEM_ARCH=amd64
+
+# [OPTIONAL] Set custom ports for services otherwise the port range from 9500-9600 will be used
+NODE_EXPORTER_PORT=9500
+BLACKBOX_EXPORTER_PORT=9510
+ALERTMANAGER_PORT=9550
+SHELL2HTTP_PORT=9560
+PROMETHEUS_PORT=9590
+
+# Add URLs to be watched (sensitive services for instance):
+# [OPTIONAL] BLACKBOX_URL_TO_PROBE="http://localhost:9500/metrics, http://localhost:9560/, https://dashboard.example.com, https://productA.example.com, https://productB.example.com"
+BLACKBOX_URL_TO_PROBE="http://localhost:9500/metrics, http://localhost:9560/,"
+
+# [OPTIONAL] Set another repeat interval for firing new alerts with alertmanager
+ALERTMANAGER_REPEAT_INTERVAL=4h
+# [OPTIONAL] Set another Temperature threshold alarm [°C]
+ALERTMANAGER_TEMPERATURE_THRESHOLD=77
+
+# [OPTIONAL] Add supplementary services to be notified from (space separated!)
+# (see https://pingme.lmno.pk/ - except Email and Zulip NOT SUPPORTED HERE because provided by default, see above)
+# e.g. NOTIFY_SERVICES='teams telegram slack'
+NOTIFY_SERVICES=''
+# Add also the corresponding **connection variables** like TELEGRAM_TOKEN, TELEGRAM_CHANNELS, SLACK_TOKEN, SLACK_CHANNELS, and so on corresponding to https://pingme.lmno.pk/#/services
+# TEAMS_WEBHOOK=
+# TELEGRAM_TOKEN=
+# TELEGRAM_CHANNELS=
+# etc...
+```
+
 ## Usage
 <table border="0">
   <tr>
@@ -102,14 +154,6 @@ Or specify which version you will install by:
 ### Get actual services status
 
     sudo ./prommanager --status --all
-
-## Configuration
-
-All the communications services have corresponding environment variables associated with it. You
-have to provide those within an .env file (see .env.example).
-
-View the [PingMe CLI Documentation Page](https://pingme.lmno.pk/#/services) for more
-details.
 
 ## Miscellaneous
 
