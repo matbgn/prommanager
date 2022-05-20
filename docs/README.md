@@ -117,10 +117,22 @@ NOTIFY_SERVICES=''
 # etc...
 ```
 
-## Usage
+### Tweaking alert rules
+
+To edit more finely the rules fired by alertmanager, after installation, edit the file `/etc/prometheus/alert.rules.yml`. 
+
 <table border="0">
   <tr>
     <td>:bulb:</td>
+    <td>An awesome source of inspiration is https://awesome-prometheus-alerts.grep.to/</td>
+  </tr>
+</table>
+
+
+## Usage
+<table border="0">
+  <tr>
+    <td>:warning:</td>
     <td>Pay attention that this script needs root access for almost all its operations</td>
   </tr>
 </table>

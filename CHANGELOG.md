@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - Improve documentation for configuration
 - Improve documentation for architecture design
+- Improve documentation by adding https://awesome-prometheus-alerts.grep.to/
 
 ## [4.1.0] - 2022.04.05
 ### Added
