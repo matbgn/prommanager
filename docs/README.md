@@ -67,6 +67,8 @@ For nightly deployment use:
 
 ## Configuration
 
+### Quick start
+
 Prommanager requires a very minimal configuration to work, but aditionnal ones gives flexibility and comfort (see below)
 
 All the communications services have corresponding environment variables associated with it. You
@@ -87,6 +89,25 @@ ALERT_EMAIL_SMTP_USER=""
 # ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
 ALERT_EMAIL_SMTP_PASS=""
 
+# [OPTIONAL] Add supplementary services to be notified from (space separated!)
+# (see https://pingme.lmno.pk/ - except Email and Zulip NOT SUPPORTED HERE because provided by default, see above)
+# e.g. NOTIFY_SERVICES='teams telegram slack'
+NOTIFY_SERVICES=''
+# Add also the corresponding **connection variables** like TELEGRAM_TOKEN, TELEGRAM_CHANNELS, SLACK_TOKEN, SLACK_CHANNELS, and so on corresponding to https://pingme.lmno.pk/#/services
+# TEAMS_WEBHOOK=
+# TELEGRAM_TOKEN=
+# TELEGRAM_CHANNELS=
+# etc...
+```
+
+Then simply install all services with the following command:
+```bash
+sudo ./prommanager --install --all
+```
+
+### Advanced configuration
+
+```bash
 # [OPTIONAL] Set linux architecture will be overridden by CLI flag e.g. --arch arm64
 SYSTEM_ARCH=amd64
 
@@ -105,16 +126,6 @@ BLACKBOX_URL_TO_PROBE="http://localhost:9500/metrics, http://localhost:9560/,"
 ALERTMANAGER_REPEAT_INTERVAL=4h
 # [OPTIONAL] Set another Temperature threshold alarm [°C]
 ALERTMANAGER_TEMPERATURE_THRESHOLD=77
-
-# [OPTIONAL] Add supplementary services to be notified from (space separated!)
-# (see https://pingme.lmno.pk/ - except Email and Zulip NOT SUPPORTED HERE because provided by default, see above)
-# e.g. NOTIFY_SERVICES='teams telegram slack'
-NOTIFY_SERVICES=''
-# Add also the corresponding **connection variables** like TELEGRAM_TOKEN, TELEGRAM_CHANNELS, SLACK_TOKEN, SLACK_CHANNELS, and so on corresponding to https://pingme.lmno.pk/#/services
-# TEAMS_WEBHOOK=
-# TELEGRAM_TOKEN=
-# TELEGRAM_CHANNELS=
-# etc...
 ```
 
 ### Tweaking alert rules
