@@ -1,0 +1,15 @@
+---
+- name: Update applications
+  shell: ./prommanager --kill --update-versions --install --exec --all
+- name: Retrieve applications versions
+  shell: ./prommanager --versions --all
+  register: apps_versions
+- name: Print versions
+  debug:
+    var: apps_versions.stdout_lines
+- name: Retrieve applications status
+  shell: ./prommanager --status --all
+  register: apps_status
+- name: Print status
+  debug:
+    var: apps_status.stdout_lines

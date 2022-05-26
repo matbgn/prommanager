@@ -1,0 +1,7 @@
+---
+- name: Retrieve Prommanager version
+  shell: ./prommanager --version
+  register: prommanager_version
+- name: Print versions
+  debug:
+    var: prommanager_version.stdout

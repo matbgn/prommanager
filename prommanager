@@ -522,7 +522,7 @@ function display_shell2http_versions() {
 
   printf "Installation version for shell2http will be: %s\n" "$SHELL2HTTP_VERSION"
 
-  INSTALLED_SHELL2HTTP_VERSION=$(/usr/local/bin/shell2http --version &> /dev/null)
+  INSTALLED_SHELL2HTTP_VERSION=$(/usr/local/bin/shell2http --version 2>&1)
   if [ "${#INSTALLED_SHELL2HTTP_VERSION}" -lt 5 ]
   then
     INSTALLED_SHELL2HTTP_VERSION="Not installed"

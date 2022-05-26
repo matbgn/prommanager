@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: yes
+  roles:
+    - ansible-modules-bitwarden
+#    - update_prommanager
+#    - prommanager_version
+    - apps_versions
+#    - setup_env_file
+#    - retrieve_env_file
+#    - install_apps
+    - update_apps

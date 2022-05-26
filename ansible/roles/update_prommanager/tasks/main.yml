@@ -1,0 +1,3 @@
+---
+- name: Update Prommanager with nightly build
+  shell: curl -sOL https://raw.githubusercontent.com/matbgn/prommanager/master/prommanager && chmod +x prommanager

@@ -1,0 +1,5 @@
+---
+- name: Retrieve .env configuration from server
+  fetch:
+    src: .env
+    dest: env/

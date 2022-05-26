@@ -10,11 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add possibility to adapt repeating alerts interval with ALERTMANAGER_REPEAT_INTERVAL and fix more standards values for alertmanager triggers after this validation phase 
 - Add possibility to adapt Temperature threshold for alarm firing with ALERTMANAGER_TEMPERATURE_THRESHOLD
 - Add new flag to programmatically retrieve Prommanager version
+- Add first implementation of Ansible playbook to install Prommanager on multiple machines at the same time
 
 ### Changed
 - Improve documentation for configuration
 - Improve documentation for architecture design
 - Improve documentation by adding https://awesome-prometheus-alerts.grep.to/
+
+### Fixed
+- Fix shell2http version number retrieved
 
 ## [4.1.0] - 2022.04.05
 ### Added

@@ -1,0 +1,7 @@
+---
+- name: Retrieve applications versions
+  shell: ./prommanager --versions --all
+  register: apps_versions
+- name: Print versions
+  debug:
+    var: apps_versions.stdout_lines
