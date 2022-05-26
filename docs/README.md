@@ -39,7 +39,7 @@ The main advantage is to facilitate maintenance trough multiple servers.
 
 PromManager does not claim to allow all possible configurations with prometheus' ecosystem, but remains a good starting point for a simple and quick deployment.
 
-## Out-of-the-Box integrated services
+## Out-of-the-Box integrated applications
 
 - *Prometheus*
 - *Node Exporter*

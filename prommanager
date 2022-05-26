@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v4.2.0!"
+MOTD="Welcome to Prometheus manager v4.2.0 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -79,6 +79,10 @@ function flags() {
     case $1 in
       -h|--help)
         usage
+        exit 1
+        ;;
+      --version)
+        echo "$MOTD" | awk '{print $5}'
         exit 1
         ;;
       -v|--verbose)
