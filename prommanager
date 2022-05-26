@@ -70,7 +70,7 @@ function usage {
         echo '   -p, --prometheus, -P [<version>]    Process for Prometheus'
         echo '   -c, --cgi, -C [<version>]           Process for CGI SHELL2HTTP API'
         echo '   -m, --messaging, -M [<version>]     Process for Messaging System (PingMe CLI)'
-        exit 1
+        exit 0
 }
 
 
@@ -79,11 +79,11 @@ function flags() {
     case $1 in
       -h|--help)
         usage
-        exit 1
+        exit 0
         ;;
       --version)
         echo "$MOTD" | awk '{print $5}'
-        exit 1
+        exit 0
         ;;
       -v|--verbose)
         LOG_LEVEL=1
