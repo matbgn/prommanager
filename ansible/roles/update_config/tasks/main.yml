@@ -1,6 +1,6 @@
 ---
-- name: Install applications
-  shell: ./prommanager --kill --install --exec --all
+- name: Update configuration
+  shell: ./prommanager --kill --update-config --exec --all
 - name: Retrieve applications status
   shell: ./prommanager --status --all
   register: apps_status
