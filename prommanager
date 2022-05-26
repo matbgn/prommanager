@@ -1478,16 +1478,16 @@ function main() {
   fi
 }
 
-
-echo "$MOTD"
-check_root_rights
-echo
-
 if [[ ${#} -eq 0 ]]; then
    usage
 fi
 
 flags "$@"
+
+echo "$MOTD"
+check_root_rights
+echo
+
 retrieve_env_datas
 # shellcheck disable=SC2119
 main
