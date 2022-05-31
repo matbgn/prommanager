@@ -1,14 +1,14 @@
 ---
-- hosts: proxy
+- hosts: all
   become: yes
   roles:
     - ansible-modules-bitwarden
-#    - update_prommanager
+    - update_prommanager
 #    - prommanager_version
 #    - retrieve_env_file
 #    - apps_versions
     - setup_env_file
-#    - install_apps
+    - install_apps
 #    - update_apps
-    - update_config
+#    - update_config
     - retrieve_env_file
