@@ -6,9 +6,9 @@
     - update_prommanager
 #    - prommanager_version
 #    - retrieve_env_file
-#    - apps_versions
     - setup_env_file
     - install_apps
 #    - update_apps
+    - apps_versions
 #    - update_config
     - retrieve_env_file

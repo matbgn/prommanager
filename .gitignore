@@ -1,7 +1,7 @@
 /.idea
 .env*
 .$*
-ansible/inventory/connections.yml
+ansible/inventory/*
 ansible/group_vars/*
 !ansible/group_vars/.gitkeep
 ansible/host_vars/*
