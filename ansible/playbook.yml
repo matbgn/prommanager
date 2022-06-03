@@ -5,7 +5,6 @@
     - ansible-modules-bitwarden
     - update_prommanager
 #    - prommanager_version
-#    - retrieve_env_file
     - setup_env_file
     - install_apps
 #    - update_apps
