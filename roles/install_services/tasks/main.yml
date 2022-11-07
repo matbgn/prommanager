@@ -1,7 +1,7 @@
 ---
-- name: Install applications
+- name: Install services
   shell: ./prommanager --kill --install --exec --all
-- name: Retrieve applications status
+- name: Retrieve services status
   shell: ./prommanager --status --all
   register: apps_status
 - name: Print status

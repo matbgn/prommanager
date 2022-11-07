@@ -1209,7 +1209,7 @@ function install_prometheus() {
 }
 
 
-function install_apps() {
+function install_services() {
   if $NODE_TRIGGER; then install_node_exporter; fi
   if $BLACKBOX_TRIGGER; then install_blackbox_exporter; fi
   if $ALERTMANAGER_TRIGGER; then install_alertmanager; fi
@@ -1464,7 +1464,7 @@ function main() {
   fi
 
   if $INSTALL; then
-    install_apps
+    install_services
   fi
 
   if $EXECUTE; then

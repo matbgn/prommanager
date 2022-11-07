@@ -65,10 +65,16 @@ For nightly deployment use:
     chmod +x prommanager
     ./prommanager -h
 
-### Installation via Ansible
+### Installation via Ansible Galaxy
 
 ```
 ansible-galaxy install git+https://github.com/matbgn/prommanager
+```
+
+To update your galaxy role run the following command
+```
+ansible-galaxy install git+https://github.com/matbgn/prommanager --force
+
 ```
 
 ## Configuration

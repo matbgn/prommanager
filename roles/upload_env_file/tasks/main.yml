@@ -1,7 +1,7 @@
 ---
 - name: Copy local .env configuration on server
   copy:
-    src: ../{{ env_file }}
+    src: "{{ env_file }}"
     dest: .env
     owner: root
     group: root
