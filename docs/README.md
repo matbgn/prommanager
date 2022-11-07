@@ -77,6 +77,14 @@ ansible-galaxy install git+https://github.com/matbgn/prommanager --force
 
 ```
 
+Then you can use it in your playbooks this way:
+```
+---
+- name: Install Prommanager
+  ansible.builtin.import_role:
+    name: prommanager/roles/update_prommanager
+```
+
 ## Configuration
 
 ### Quick start
