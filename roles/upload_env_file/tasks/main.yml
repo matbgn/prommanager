@@ -2,7 +2,7 @@
 - name: Copy local .env configuration on server
   copy:
     src: "{{ prommanager_env_file }}"
-    dest: .env
+    dest: /opt/prommanager/.env
     owner: root
     group: root
     mode: '0600'
