@@ -65,6 +65,12 @@ For nightly deployment use:
     chmod +x prommanager
     ./prommanager -h
 
+### Installation via Ansible
+
+```
+ansible-galaxy install git+https://github.com/matbgn/prommanager
+```
+
 ## Configuration
 
 ### Quick start
