@@ -88,6 +88,15 @@ Then you can use it in your playbooks, for specific task use it this way:
     name: prommanager/roles/update_prommanager
 ```
 
+Available tags are:
+```
+- install_prommanager
+- update_prommanager
+- update_prommanager_configuration
+- update_prommanager_services
+- prommanager_status
+```
+
 ## Configuration
 
 ### Quick start
