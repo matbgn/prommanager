@@ -66,6 +66,7 @@ For nightly deployment use:
     ./prommanager -h
 
 ### Installation via Ansible Galaxy
+Be sure to have Ansible-core version 2.13+
 
 ```
 ansible-galaxy install git+https://github.com/matbgn/prommanager
@@ -77,7 +78,19 @@ ansible-galaxy install git+https://github.com/matbgn/prommanager --force
 
 ```
 
-Then you can use it in your playbooks, for specific task use it this way:
+Considering the target hostname as `own-vmh-16` in your inventory, then:
+
+1. Create a specific host_vars for this host beside you playbook.yml `host_vars > own-vmh-16.yml`, then give the following variables:
+```
+---
+prommanager_version: v5.0.0                               # Which Prommanager version to install
+prommanager_channel: nightly                              # Which Prommanager channel to use [stable/nightly]
+prommanager_env_file: env/.env.prommanager.own-vmh-16     # Where is the Prommanager .env file locally located (will be push on host)
+```
+
+2. Based on the .env.example below populate yours
+
+3. Then you can use it in your playbooks. For instance, for specific task use it this way:
 ```
 ---
 - name: Install Prommanager
