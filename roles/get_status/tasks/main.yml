@@ -2,6 +2,7 @@
 - name: Retrieve services status
   shell: /opt/prommanager/prommanager --status --all
   register: apps_status
+  changed_when: apps_status.rc != 0
 - name: Print status
   debug:
     var: apps_status.stdout_lines

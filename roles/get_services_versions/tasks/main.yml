@@ -2,6 +2,7 @@
 - name: Retrieve services versions
   shell: /opt/prommanager/prommanager --versions --all
   register: services_versions
+  changed_when: services_versions.rc != 0
 - name: Print versions
   debug:
     var: services_versions.stdout_lines
