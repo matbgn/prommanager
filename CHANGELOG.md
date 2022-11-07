@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 - Fix shell2http version number retrieved
 
-## [4.1.0] - 2022.04.05
+## [4.1.0] - 2022-04-05
 ### Added
 - Add alerts for following key values: CPU Load (>80%), RAM (>85%), Storage (>80%), node temperature (>70°C when available)
 - Add originating server on messages
@@ -29,11 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Fix sensitivity for HTTP Probe failure
 
 
-## [4.0.2] - 2022.04.01
+## [4.0.2] - 2022-04-01
 ### Fixed 
 - Fix alerts containing multiple alerts in it
 
-## [4.0.1] - 2022.04.01
+## [4.0.1] - 2022-04-01
 ### Added
 - Add latest release as preferred download channel (stability)
 - Add possibility to override ports used for each service via .env file
