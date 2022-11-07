@@ -1,8 +1,7 @@
 ---
-- hosts: proxy
+- hosts: all
   become: yes
   roles:
-    - ansible-modules-bitwarden
     - update_prommanager
     - upload_configuration
     - update_services

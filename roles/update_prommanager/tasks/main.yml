@@ -1,16 +1,25 @@
 ---
 - name: Ensure installation folder is present
+  tags:
+    - install_prommanager
+    - update_prommanager
   ansible.builtin.file:
     path: /opt/prommanager
     state: directory
     mode: "0755"
 
 - name: Check if prommanager is already installed
+  tags:
+    - install_prommanager
+    - update_prommanager
   ansible.builtin.stat:
     path: /opt/prommanager/prommanager
   register: prommanager_presence
 
 - name: Retrieve Prommanager version
+  tags:
+    - install_prommanager
+    - update_prommanager
   ansible.builtin.command:
     cmd: /bin/bash /opt/prommanager/prommanager --version
   when: prommanager_presence.stat.exists
@@ -18,12 +27,18 @@
   changed_when: prommanager_installed_version.rc != 0
 
 - name: Remove Prommanager for upgrade if requested
+  tags:
+    - install_prommanager
+    - update_prommanager
   ansible.builtin.file:
     path: /opt/prommanager/prommanager
     state: absent
   when: prommanager_presence.stat.exists and ((prommanager_version != prommanager_installed_version.stdout) or (prommanager_channel == "nightly"))
 
 - name: Install Prommanager nightly if requested
+  tags:
+    - install_prommanager
+    - update_prommanager
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/matbgn/prommanager/master/prommanager
     dest: /opt/prommanager
@@ -31,11 +46,17 @@
   when: prommanager_channel == "nightly"
 
 - name: Check if stable version is needed
+  tags:
+    - install_prommanager
+    - update_prommanager
   ansible.builtin.stat:
     path: /opt/prommanager/prommanager
   register: prommanager_presence
 
 - name: Install Prommanager stable
+  tags:
+    - install_prommanager
+    - update_prommanager
   ansible.builtin.get_url:
     url: "https://github.com/matbgn/prommanager/releases/download/{{ prommanager_version }}/prommanager"
     dest: /opt/prommanager

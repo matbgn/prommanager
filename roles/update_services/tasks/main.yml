@@ -1,3 +1,6 @@
 ---
 - name: Update services
-  shell: /opt/prommanager/prommanager --kill --update-versions --install --exec --all
+  tags:
+    - install_prommanager
+    - update_prommanager_services
+  ansible.builtin.shell: /opt/prommanager/prommanager --kill --update-versions --install --exec --all

@@ -1,12 +1,18 @@
 ---
 - name: Copy local .env configuration on server
-  copy:
+  tags:
+    - install_prommanager
+    - update_prommanager_configuration
+  ansible.builtin.copy:
     src: "{{ prommanager_env_file }}"
     dest: /opt/prommanager/.env
     owner: root
     group: root
     mode: '0600'
     backup: yes
+
 - name: Update configuration
-  shell: /opt/prommanager/prommanager --kill --update-config --exec --all
-  
+  tags:
+    - install_prommanager
+    - update_prommanager_configuration
+  ansible.builtin.shell: /opt/prommanager/prommanager --kill --update-config --exec --all

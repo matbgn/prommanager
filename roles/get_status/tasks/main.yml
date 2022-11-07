@@ -1,8 +1,19 @@
 ---
 - name: Retrieve services status
-  shell: /opt/prommanager/prommanager --status --all
+  tags:
+    - install_prommanager
+    - update_prommanager_configuration
+    - update_prommanager_services
+    - prommanager_status
+  ansible.builtin.shell: /opt/prommanager/prommanager --status --all
   register: apps_status
   changed_when: apps_status.rc != 0
+
 - name: Print status
-  debug:
+  tags:
+    - install_prommanager
+    - update_prommanager_configuration
+    - update_prommanager_services
+    - prommanager_status
+  ansible.builtin.debug:
     var: apps_status.stdout_lines
