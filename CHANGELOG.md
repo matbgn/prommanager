@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add possibility to adapt Temperature threshold for alarm firing with ALERTMANAGER_TEMPERATURE_THRESHOLD
 - Add new flag to programmatically retrieve Prommanager version
 - Add first implementation of Ansible playbook to install Prommanager on multiple machines at the same time
+- Add meta definition for Ansible
 
 ### Changed
 - Improve documentation for configuration
