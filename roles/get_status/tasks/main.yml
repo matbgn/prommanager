@@ -1,6 +1,6 @@
 ---
-- name: Retrieve applications status
-  shell: ./prommanager --status --all
+- name: Retrieve services status
+  shell: /opt/prommanager/prommanager --status --all
   register: apps_status
 - name: Print status
   debug:

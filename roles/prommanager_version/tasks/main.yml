@@ -1,6 +1,6 @@
 ---
 - name: Retrieve Prommanager version
-  shell: ./prommanager --version
+  shell: /opt/prommanager/prommanager --version
   register: prommanager_version
 - name: Print versions
   debug:

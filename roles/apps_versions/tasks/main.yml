@@ -1,6 +1,6 @@
 ---
-- name: Retrieve applications versions
-  shell: ./prommanager --versions --all
+- name: Retrieve services versions
+  shell: /opt/prommanager/prommanager --versions --all
   register: apps_versions
 - name: Print versions
   debug:

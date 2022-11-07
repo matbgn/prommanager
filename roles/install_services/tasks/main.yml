@@ -1,8 +1,8 @@
 ---
 - name: Install services
-  shell: ./prommanager --kill --install --exec --all
+  shell: /opt/prommanager/prommanager --kill --install --exec --all
 - name: Retrieve services status
-  shell: ./prommanager --status --all
+  shell: /opt/prommanager/prommanager --status --all
   register: apps_status
 - name: Print status
   debug:
