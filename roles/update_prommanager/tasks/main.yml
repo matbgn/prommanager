@@ -30,7 +30,12 @@
     mode: "0755"
   when: prommanager_channel == "nightly"
 
-- name: Install Prommanager stable if needed
+- name: Check if stable version is needed
+  ansible.builtin.stat:
+    path: /opt/prommanager/prommanager
+  register: prommanager_presence
+
+- name: Install Prommanager stable
   ansible.builtin.get_url:
     url: "https://github.com/matbgn/prommanager/releases/download/{{ prommanager_version }}/prommanager"
     dest: /opt/prommanager
