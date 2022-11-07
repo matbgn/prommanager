@@ -4,14 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+*Labels: Added // Changed // Deprecated // Removed // Fixed // Security // Chore*
+
 ## [Unreleased]
-*Labels: Added // Changed // Deprecated // Removed // Fixed // Security*
+...
+
+## [5.0.0] - 2022-11-07
 ### Add
 - Add possibility to adapt repeating alerts interval with ALERTMANAGER_REPEAT_INTERVAL and fix more standards values for alertmanager triggers after this validation phase 
-- Add possibility to adapt Temperature threshold for alarm firing with ALERTMANAGER_TEMPERATURE_THRESHOLD
+- Add possibility to adapt Temperature threshold for alarms firing with ALERTMANAGER_TEMPERATURE_THRESHOLD
 - Add new flag to programmatically retrieve Prommanager version
 - Add first implementation of Ansible playbook to install Prommanager on multiple machines at the same time
-- Add meta definition for Ansible
+- Add meta definition for Ansible Galaxy
+- Add basic documentation to start with this Ansible role via Ansible Galaxy
 
 ### Changed
 - Improve documentation for configuration
@@ -20,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 - Fix shell2http version number retrieved
+
+### Chore
+- Rename apps function to services
 
 ## [4.1.0] - 2022-04-05
 ### Added
@@ -106,7 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.0.0...HEAD
+[5.0.0]: https://github.com/matbgn/prommanager/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/matbgn/prommanager/compare/v4.0.2...v4.1.0
 [4.0.2]: https://github.com/matbgn/prommanager/compare/v4.0.1...v4.0.2
 [4.0.1]: https://github.com/matbgn/prommanager/compare/v4.0.0...v4.0.1
@@ -115,4 +124,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [2.0.0]: https://github.com/matbgn/prommanager/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/matbgn/prommanager/releases/tag/v1.0.0
 
-    GH CLI: gh release create vX.0.0 -t "v.X.0.0" -n "See [CHANGELOG.md](CHANGELOG.md) for details" prommanager
+    GH CLI: gh release create vX.0.0 -t "vX.0.0" -n "See [CHANGELOG.md](CHANGELOG.md) for details" prommanager
