@@ -1,2 +1,2 @@
 ---
-env_file: .env.example
+prommanager_env_file: .env.example
