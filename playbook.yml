@@ -4,11 +4,10 @@
   roles:
     - ansible-modules-bitwarden
     - update_prommanager
-    - upload_env_file
-    - install_services
+    - upload_configuration
+    - update_services
     # - get_status
     # - prommanager_version
-    # - update_apps
     # - update_config_only
     # - apps_versions
     # - retrieve_env_file

@@ -7,3 +7,6 @@
     group: root
     mode: '0600'
     backup: yes
+- name: Update configuration
+  shell: /opt/prommanager/prommanager --kill --update-config --exec --all
+  

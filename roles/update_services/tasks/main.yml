@@ -1,7 +1,7 @@
 ---
-- name: Update applications
+- name: Update services
   shell: /opt/prommanager/prommanager --kill --update-versions --install --exec --all
-- name: Retrieve applications status
+- name: Retrieve services status
   shell: /opt/prommanager/prommanager --status --all
   register: apps_status
 - name: Print status
