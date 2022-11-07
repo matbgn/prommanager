@@ -6,8 +6,5 @@
     - update_prommanager
     - upload_configuration
     - update_services
-    # - get_status
-    # - prommanager_version
-    # - update_config_only
-    # - apps_versions
-    # - retrieve_env_file
+    - get_status
+    - get_services_versions

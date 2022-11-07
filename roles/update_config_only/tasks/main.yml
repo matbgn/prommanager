@@ -1,9 +1,0 @@
----
-- name: Update configuration
-  shell: /opt/prommanager/prommanager --kill --update-config --exec --all
-- name: Retrieve applications status
-  shell: /opt/prommanager/prommanager --status --all
-  register: apps_status
-- name: Print status
-  debug:
-    var: apps_status.stdout_lines

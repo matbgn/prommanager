@@ -1,7 +1,7 @@
 ---
 - name: Retrieve services versions
   shell: /opt/prommanager/prommanager --versions --all
-  register: apps_versions
+  register: services_versions
 - name: Print versions
   debug:
-    var: apps_versions.stdout_lines
+    var: services_versions.stdout_lines
