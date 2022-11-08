@@ -134,6 +134,9 @@ ALERT_EMAIL_SMTP_USER=""
 # ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
 ALERT_EMAIL_SMTP_PASS=""
 
+# [RECOMMENDED] Set the .env & .versions file path location. Don't forget final slash "/"
+ENV_FILE_PATH="./"
+
 # [OPTIONAL] Add supplementary services to be notified from (space separated!)
 # (see https://pingme.lmno.pk/ - except Email and Zulip NOT SUPPORTED HERE because provided by default, see above)
 # e.g. NOTIFY_SERVICES='teams telegram slack'
