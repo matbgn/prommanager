@@ -21,7 +21,7 @@ UPDATE_VERSIONS=false
 UPDATE_CONFIGS=false
 INSTALL=false
 
-ENV_FILE_PATH="./"
+ENV_FILE_PATH="/opt/prommanager"
 
 # Default configuration if not override by .env file
 NODE_EXPORTER_PORT=9500

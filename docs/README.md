@@ -119,6 +119,8 @@ Prommanager requires a very minimal configuration to work, but aditionnal ones g
 All the communications services have corresponding environment variables associated with it. You
 have to provide those within the .env file. See the [PingMe CLI Documentation Page](https://pingme.lmno.pk/#/services) for more details.
 
+Prefer an installation in `/opt/prommanager/` as it is a good practice. If you want you can override this location via `ENV_FILE_PATH` variable (see below).
+
 To activate configuration start by moving the provided .env.example as .env next to prommanager executable and edit it as needed :
 
 ```bash
@@ -134,8 +136,8 @@ ALERT_EMAIL_SMTP_USER=""
 # ALERT_EMAIL_SMTP_PASS="my_top_secret_pass"
 ALERT_EMAIL_SMTP_PASS=""
 
-# [RECOMMENDED] Set the .env & .versions file path location. Don't forget final slash "/"
-ENV_FILE_PATH="./"
+# [RECOMMENDED] Set the .env & .versions file path location
+ENV_FILE_PATH="/opt/prommanager/"
 
 # [OPTIONAL] Add supplementary services to be notified from (space separated!)
 # (see https://pingme.lmno.pk/ - except Email and Zulip NOT SUPPORTED HERE because provided by default, see above)

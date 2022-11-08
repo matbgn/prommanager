@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security // Chore*
 
 ## [Unreleased]
+...
+
+## [5.1.0] - 2022-11-08
 ### Add
 - Add env file path variable to specify custom location
 
@@ -115,7 +118,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.0.0...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.1.0...HEAD
+[5.1.0]: https://github.com/matbgn/prommanager/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/matbgn/prommanager/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/matbgn/prommanager/compare/v4.0.2...v4.1.0
 [4.0.2]: https://github.com/matbgn/prommanager/compare/v4.0.1...v4.0.2
