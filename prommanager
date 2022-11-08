@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v5.0.0 !"
+MOTD="Welcome to Prometheus manager v5.1.0 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -20,6 +20,8 @@ DISPLAY_VERSIONS=false
 UPDATE_VERSIONS=false
 UPDATE_CONFIGS=false
 INSTALL=false
+
+ENV_FILE_PATH="./"
 
 # Default configuration if not override by .env file
 NODE_EXPORTER_PORT=9500
@@ -57,7 +59,8 @@ function usage {
         echo '                                       selected apps'
         echo '   --update-config                     Overwrite config files based on .env'
         echo '                                       file and alerts config (need restart)'
-        echo '   --offline                           For debug purpose only'
+        echo '   --env [file_path]                   Location of the env/versions files path'
+        echo '   --work-offline                      For debug purpose only'
         echo ''
         echo '------------- APPS FLAGS -----------------------------------------------------'
         echo ''
@@ -111,6 +114,10 @@ function flags() {
         ;;
       --update-config)
         UPDATE_CONFIGS=true
+        shift # argument
+        ;;
+      --env)
+        ENV_FILE_PATH="$2"
         shift # argument
         ;;
       -i|--install)
@@ -223,7 +230,7 @@ function flags() {
         shift # argument
         shift # value
         ;;
-      --offline)
+      --work-offline)
         DEBUG_OFFLINE=true
         shift # argument
         ;;
@@ -435,7 +442,7 @@ function ensure_versions() {
 
 function store_actual_versions() {
   if [ $LOG_LEVEL -gt 3 ]; then echo '[DEBUG] Storing new versions in .versions file...'; fi
-  cat > .versions << EOM
+  cat > "$ENV_FILE_PATH"/.versions << EOM
 NODE_EXPORTER_VERSION=$NODE_EXPORTER_VERSION
 BLACKBOX_EXPORTER_VERSION=$BLACKBOX_EXPORTER_VERSION
 ALERTMANAGER_VERSION=$ALERTMANAGER_VERSION
@@ -444,7 +451,7 @@ SHELL2HTTP_VERSION=$SHELL2HTTP_VERSION
 PINGME_VERSION=$PINGME_VERSION
 EOM
 
-  chmod 666 .versions
+  chmod 666 "$ENV_FILE_PATH"/.versions
   if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Versions stored locally'; fi
 }
 
@@ -947,7 +954,7 @@ function config_shell2http() {
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Storing actual env to be accessible by shell2http on further alerts\n"; fi
 
   mkdir /etc/prometheus &> /dev/null
-  cp .env /etc/prometheus/.env.shell2http
+  cp "$ENV_FILE_PATH"/.env /etc/prometheus/.env.shell2http
   touch /etc/prometheus/.tmp.shell2http
 
   chown shell2http:shell2http /etc/prometheus/.env.shell2http &> /dev/null
@@ -1425,14 +1432,14 @@ function retrieve_env_datas() {
 
   if [ $LOG_LEVEL -gt 2 ]; then echo '[INFO] Load env files'; fi
 
-  eval "$(/usr/local/bin/shdotenv -e .env)"
+  eval "$(/usr/local/bin/shdotenv -e "$ENV_FILE_PATH"/.env)"
   # Compose additional env var based on .env file
   ALERT_WEBHOOK_URL="http://localhost:$SHELL2HTTP_PORT/notify"
 
   # Retrieve versions from .versions file in form of:
   # NODE_EXPORTER_VERSION=1.3.1
   # PROMETHEUS_VERSION=2.33.5
-  eval "$(/usr/local/bin/shdotenv -e .versions)"
+  eval "$(/usr/local/bin/shdotenv -e "$ENV_FILE_PATH"/.versions)"
 }
 
 

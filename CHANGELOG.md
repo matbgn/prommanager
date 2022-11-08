@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security // Chore*
 
 ## [Unreleased]
-...
+### Add
+- Add env file path variable to specify custom location
 
 ## [5.0.0] - 2022-11-07
 ### Add
