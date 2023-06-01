@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ...
 
+## [5.1.1] - 2023-06-01
+### Fix
+- Fix sed cmd to not duplicate the lines if already there for blackbox_exporter config
+
 ## [5.1.0] - 2022-11-08
 ### Add
 - Add env file path variable to specify custom location
@@ -118,7 +122,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.1.0...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.1.1...HEAD
+[5.1.1]: https://github.com/matbgn/prommanager/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/matbgn/prommanager/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/matbgn/prommanager/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/matbgn/prommanager/compare/v4.0.2...v4.1.0
