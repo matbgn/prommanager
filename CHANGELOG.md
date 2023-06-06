@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ...
 
+## [5.1.2] - 2023-06-06
+### Fix
+- Fix identation in blackbox_exporter config
+
 ## [5.1.1] - 2023-06-01
 ### Fix
 - Fix sed cmd to not duplicate the lines if already there for blackbox_exporter config
@@ -122,7 +126,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.1.1...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.1.2...HEAD
+[5.1.2]: https://github.com/matbgn/prommanager/compare/v5.1.1...v5.1.2
 [5.1.1]: https://github.com/matbgn/prommanager/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/matbgn/prommanager/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/matbgn/prommanager/compare/v4.1.0...v5.0.0

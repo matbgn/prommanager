@@ -678,8 +678,8 @@ function download_blackbox_exporter() {
 function config_blackbox_exporter() {
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Config blackbox_exporter\n"; fi
   # Set ipv4 as preferred protocol for blackbox_exporter
-  sed -i '4s/^.*$/  http:/; 4t; 4i   http:' /etc/prometheus/blackbox.yml
-  sed -i '5s/^.*$/    preferred_ip_protocol: "ip4"/; 5t; 5i     preferred_ip_protocol: "ip4"' /etc/prometheus/blackbox.yml
+  sed -i '4s/^.*$/    http:/; 4t; 4i   http:' /etc/prometheus/blackbox.yml
+  sed -i '5s/^.*$/      preferred_ip_protocol: "ip4"/; 5t; 5i     preferred_ip_protocol: "ip4"' /etc/prometheus/blackbox.yml
 }
 
 
