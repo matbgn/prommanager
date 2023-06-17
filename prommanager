@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v5.1.2 !"
+MOTD="Welcome to Prometheus manager v5.1.3 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -626,6 +626,7 @@ ExecStart=/usr/local/bin/node_exporter \
   --collector.systemd \
   --collector.processes \
   --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/) \
+  --runtime.gomaxprocs=2 \
   --web.listen-address=:${NODE_EXPORTER_PORT}
 
 [Install]
@@ -640,7 +641,7 @@ EOM
     if [ $? -ne 0 ]
     then
       printf "You have to install node_exporter daemon manually!\nSee for instance ruby gem pleaserun https://github.com/jordansissel/pleaserun\n"
-      printf "$ pleaserun --user node_exporter --group node_exporter \\\n--install /usr/local/bin/node_exporter --collector.systemd \\\n--collector.processes --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
+      printf "$ pleaserun --user node_exporter --group node_exporter \\\n--install /usr/local/bin/node_exporter --collector.systemd \\\n--collector.processes --runtime.gomaxprocs=2 --web.listen-address=:%s\n\n" "$NODE_EXPORTER_PORT"
     fi
   fi
 }

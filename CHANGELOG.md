@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security // Chore*
 
 ## [Unreleased]
-...
+### Fix
+- Fix node_exporter goroutine error
 
 ## [5.1.2] - 2023-06-06
 ### Fix
