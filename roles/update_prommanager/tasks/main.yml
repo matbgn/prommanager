@@ -41,7 +41,7 @@
     - update_prommanager
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/matbgn/prommanager/master/prommanager
-    dest: /opt/prommanager
+    dest: /opt/prommanager/prommanager
     mode: "0755"
   when: prommanager_channel == "nightly"
 

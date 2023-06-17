@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Fix
 - Fix node_exporter goroutine error
+- Fix installation for nightly with ansible
 
 ## [5.1.2] - 2023-06-06
 ### Fix
