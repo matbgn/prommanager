@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security // Chore*
 
 ## [Unreleased]
+...
+
+## [5.1.4] - 2023-06-17
 ### Fix
 - Fix node_exporter goroutine error
 - Fix installation for nightly with ansible
@@ -128,7 +131,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.1.2...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.1.4...HEAD
+[5.1.2]: https://github.com/matbgn/prommanager/compare/v5.1.2...v5.1.4
 [5.1.2]: https://github.com/matbgn/prommanager/compare/v5.1.1...v5.1.2
 [5.1.1]: https://github.com/matbgn/prommanager/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/matbgn/prommanager/compare/v5.0.0...v5.1.0
