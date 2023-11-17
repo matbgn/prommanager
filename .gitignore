@@ -7,3 +7,4 @@ ansible/group_vars/*
 ansible/host_vars/*
 !ansible/host_vars/.gitkeep
 !.env.example
+.vscode

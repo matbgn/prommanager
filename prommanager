@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v5.1.4 !"
+MOTD="Welcome to Prometheus manager v5.2.0 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -32,6 +32,7 @@ PROMETHEUS_PORT=9590
 
 ALERTMANAGER_REPEAT_INTERVAL=4h
 ALERTMANAGER_TEMPERATURE_THRESHOLD=77
+ALERTMANAGER_CPU_THRESHOLD=80
 
 EXECUTE=false
 KILL_APPS=false
@@ -829,13 +830,13 @@ groups:
       summary: HTTP probe failed (instance {{ \$labels.instance }})
       description: "Probe failed\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostHighCpuLoad
-    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > $ALERTMANAGER_CPU_THRESHOLD
     for: 0m
     labels:
       severity: warning
     annotations:
       summary: Host high CPU load (instance {{ \$labels.instance }})
-      description: "CPU load is greater than 80%\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: "CPU load is greater than $ALERTMANAGER_CPU_THRESHOLD%\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostOutOfMemory
     expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 15
     for: 2m

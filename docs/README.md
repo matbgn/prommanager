@@ -176,6 +176,8 @@ BLACKBOX_URL_TO_PROBE="http://localhost:9500/metrics, http://localhost:9560/,"
 ALERTMANAGER_REPEAT_INTERVAL=4h
 # [OPTIONAL] Set another Temperature threshold alarm [°C]
 ALERTMANAGER_TEMPERATURE_THRESHOLD=77
+# [OPTIONAL] Set another CPU threshold alarm [%]
+ALERTMANAGER_CPU_THRESHOLD=80
 ```
 
 ### Tweaking alert rules

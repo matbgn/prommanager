@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ...
 
+## [5.2.0] - 2023-11-17
+### Add
+- Add possibility to adapt CPU threshold for alarms firing with ALERTMANAGER_CPU_THRESHOLD
+
 ## [5.1.4] - 2023-06-17
 ### Fix
 - Fix node_exporter goroutine error
@@ -131,7 +135,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - [WARNING] Breaking changes for script arguments
 
-[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.1.4...HEAD
+[Unreleased]: https://github.com/matbgn/prommanager/compare/v5.2.0...HEAD
+[5.1.4]: https://github.com/matbgn/prommanager/compare/v5.1.4...v5.2.0
 [5.1.2]: https://github.com/matbgn/prommanager/compare/v5.1.2...v5.1.4
 [5.1.2]: https://github.com/matbgn/prommanager/compare/v5.1.1...v5.1.2
 [5.1.1]: https://github.com/matbgn/prommanager/compare/v5.1.0...v5.1.1
