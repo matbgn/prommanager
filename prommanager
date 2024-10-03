@@ -33,7 +33,7 @@ PROMETHEUS_PORT=9590
 ALERTMANAGER_REPEAT_INTERVAL=4h
 ALERTMANAGER_TEMPERATURE_THRESHOLD=77
 ALERTMANAGER_CPU_THRESHOLD=80
-ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120M=0.6
+ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN=0.6
 
 EXECUTE=false
 KILL_APPS=false
@@ -844,13 +844,13 @@ groups:
       summary: Host high CPU load (instance {{ \$labels.instance }})
       description: "CPU load is greater than $ALERTMANAGER_CPU_THRESHOLD%\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"  
   - alert: HostHighLoad1ForLongPeriod
-    expr: avg_over_time(node_load1[120m]) > $ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120M
+    expr: avg_over_time(node_load1[120m]) > $ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN
     for: 0m
     labels:
       severity: warning
     annotations:
       summary: Host high CPU load for a too long period (instance {{ \$labels.instance }})
-      description: "CPU load1 is greater than $ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120M for the last 120 min\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: "CPU load1 is greater than $ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN for the last 120 min\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostOutOfMemory
     expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 15
     for: 2m
