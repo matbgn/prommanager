@@ -80,6 +80,7 @@ function usage {
 
 function flags() {
   while [[ $# -gt 0 ]]; do
+    # shellcheck disable=SC2221,SC2222
     case $1 in
       -h|--help)
         usage
@@ -759,7 +760,11 @@ function set_alertmanager_folders() {
   if [ $LOG_LEVEL -gt 3 ]
   then
     printf "Alertmanager directories:\n"
-    ls -all /var/lib/ | grep alertmanager
+    for entry in /var/lib/*; do
+      if [[ "$entry" == *alertmanager* ]]; then
+        ls -ld "$entry"
+      fi
+    done
     echo
   fi
 }
@@ -1084,9 +1089,15 @@ function set_prometheus_folders() {
   chown prometheus:prometheus /var/lib/prometheus &> /dev/null
   if [ $LOG_LEVEL -gt 3 ]
   then
-    ls /etc | grep prometheus | awk '{printf "Directories %s:\n", $1}'
-    ls -all /etc | grep prometheus
-    ls -all /var/lib/ | grep prometheus
+    for dir in /etc/prometheus*; do
+      [ -e "$dir" ] && printf "Directories %s:\n" "${dir##*/}"
+    done
+    for file in /etc/prometheus*; do
+      [ -e "$file" ] && ls -all "$file"
+    done
+    for file in /var/lib/prometheus*; do
+      [ -e "$file" ] && ls -all "$file"
+    done
     echo
   fi
 }
