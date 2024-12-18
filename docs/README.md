@@ -231,11 +231,18 @@ Or specify which version you will install by:
     sudo ./prommanager --status --all
 
 
+## Grafana integration
+Upload the file named `prometheus_node_exporter_grafana_template.json` in your Grafana Dashboards to have such rendering:
+
+![Dashboard_example](grafana_dashboard_example.png)
+
+This dashboard implementation is a derivate of starsliao's work, see https://github.com/starsliao/Prometheus
+
 ## Architecture design
 
 The architecture's design is mainly based on the advices of this book [Bastos, Joel and Araujo, Pedro. (2019) __Hands-On Infrastructure Monitoring with Prometheus: Implement and scale queries, dashboards, and alerting across machines and containers__. Birmingham, UK: Packt Publishing.](https://www.amazon.de/-/en/dp/1789612349?ie=UTF8&n=530484031) and is intended as following:
 
-![Architecture_desing](architecture.drawio.svg)
+![Architecture_design](architecture.drawio.svg)
 
 ## Miscellaneous
 
