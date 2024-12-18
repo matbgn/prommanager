@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security // Chore*
 
 ## [Unreleased]
-...
+### Changed
+- Bump Grafana dashboard to last version
 
 ## [5.2.0] - 2023-11-17
 ### Add
