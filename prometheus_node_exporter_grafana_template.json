@@ -1423,7 +1423,7 @@
           "hide": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "Average %",
+          "legendFormat": "Average%",
           "range": true,
           "refId": "H"
         }
