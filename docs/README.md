@@ -234,7 +234,7 @@ Or specify which version you will install by:
 ## Grafana integration
 Upload the file named `prometheus_node_exporter_grafana_template.json` in your Grafana Dashboards to have such rendering:
 
-![Dashboard_example](grafana_dashboard_example.png)
+![Dashboard_example](img/grafana_dashboard_example.png)
 
 This dashboard implementation is a derivate of starsliao's work, see https://github.com/starsliao/Prometheus
 
