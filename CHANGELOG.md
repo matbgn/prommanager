@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security // Chore*
 
 ## [Unreleased]
+### Add
+- Add possibility to set a CPU threshold for long (>120min) load1 with ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN
 ### Changed
 - Bump Grafana dashboard to last version
 
