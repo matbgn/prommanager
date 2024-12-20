@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prometheus manager v5.2.0 !"
+MOTD="Welcome to Prommanager v5.3.0 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
