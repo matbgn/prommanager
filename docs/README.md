@@ -62,13 +62,13 @@ For latest stable version use following command:
 
     curl -s https://api.github.com/repos/matbgn/prommanager/releases/latest | awk -F \" -v RS="," '/browser_download_url/ {print $(NF-1)}' | xargs curl -OL
     chmod +x prommanager
-    ./prommanager --version
+    ./prommanager --help
 
 For nightly deployment use:
 
     curl -OL https://raw.githubusercontent.com/matbgn/prommanager/master/prommanager
     chmod +x prommanager
-    ./prommanager --version
+    ./prommanager --help
 
 ### Installation via Ansible Galaxy
 Be sure to have Ansible-core version 2.13+
