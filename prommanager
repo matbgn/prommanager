@@ -85,11 +85,12 @@ function flags() {
     # shellcheck disable=SC2221,SC2222
     case $1 in
       -h|--help)
+        echo "$MOTD"
         usage
         exit 0
         ;;
       --version)
-        echo "$MOTD" | awk '{print $5}'
+        echo "$MOTD" | awk '{print $4}'
         exit 0
         ;;
       -v|--verbose)
