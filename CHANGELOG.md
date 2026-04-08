@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 *Labels: Added // Changed // Deprecated // Removed // Fixed // Security // Chore*
 
 ## [Unreleased]
+
+## [5.4.0] - 2023-11-17
+### Add
+- Add possibility to adapt bottom RAM threshold for alarms firing with ALERTMANAGER_RAM_THRESHOLD
+
+## [5.3.0] - 2023-11-17
 ### Add
 - Add possibility to set a CPU threshold for long (>120min) load1 with ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN
 ### Changed

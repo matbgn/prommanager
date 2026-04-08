@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prommanager v5.3.0 !"
+MOTD="Welcome to Prommanager v5.4.0 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -33,6 +33,7 @@ PROMETHEUS_PORT=9590
 ALERTMANAGER_REPEAT_INTERVAL=4h
 ALERTMANAGER_TEMPERATURE_THRESHOLD=77
 ALERTMANAGER_CPU_THRESHOLD=80
+ALERTMANAGER_RAM_THRESHOLD=15
 # Default to 85% for 1 thread load
 ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN=$(echo "scale=2; 0.85 * $(nproc)" | bc)
 
@@ -854,13 +855,13 @@ groups:
       summary: Host high CPU load for a too long period (instance {{ \$labels.instance }})
       description: "CPU load1 is greater than $ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN for the last 120 min\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostOutOfMemory
-    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 15
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < $ALERTMANAGER_RAM_THRESHOLD
     for: 2m
     labels:
       severity: warning
     annotations:
       summary: Host out of memory (instance {{ \$labels.instance }})
-      description: "Node memory is filling up (lower than 15% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: "Node memory is filling up (lower than $ALERTMANAGER_RAM_THRESHOLD% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
   - alert: HostOutOfDiskSpace
     expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 20 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
     for: 2m

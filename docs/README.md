@@ -183,6 +183,8 @@ ALERTMANAGER_REPEAT_INTERVAL=4h
 ALERTMANAGER_TEMPERATURE_THRESHOLD=77
 # [OPTIONAL] Set another CPU threshold alarm [%]
 ALERTMANAGER_CPU_THRESHOLD=80
+# [OPTIONAL] Set another bottom RAM threshold alarm [%]
+ALERTMANAGER_RAM_THRESHOLD=15
 ```
 
 ### Tweaking alert rules
