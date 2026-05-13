@@ -14,6 +14,7 @@ ALERTMANAGER_TRIGGER=false
 PROMETHEUS_TRIGGER=false
 SHELL2HTTP_TRIGGER=false
 PINGME_TRIGGER=false
+FALCO_METRICS_ENABLED=false
 
 DISPLAY_VERSIONS=false
 
@@ -818,18 +819,17 @@ EOM
 function config_alert_rules() {
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Config Alert Rules\n"; fi
 
-  cat > /etc/prometheus/alert.rules.yml <<EOM
-groups:
+  local ALERT_RULES="groups:
 - name: alert.rules
   rules:
   - alert: InstanceDown
     expr: up == 0
     for: 5m
     labels:
-      severity: "critical"
+      severity: \"critical\"
     annotations:
-      summary: "Endpoint {{ \$labels.instance }} down"
-      description: "{{ \$labels.instance }} of job {{ \$labels.job }} has been down for more than 5 minutes."
+      summary: \"Endpoint {{ \$labels.instance }} down\"
+      description: \"{{ \$labels.instance }} of job {{ \$labels.job }} has been down for more than 5 minutes.\"
   - alert: HTTPProbeFailed
     expr: probe_success == 0
     for: 5m
@@ -837,15 +837,15 @@ groups:
       severity: critical
     annotations:
       summary: HTTP probe failed (instance {{ \$labels.instance }})
-      description: "Probe failed\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: \"Probe failed\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
   - alert: HostHighCpuLoad
-    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > $ALERTMANAGER_CPU_THRESHOLD
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[2m])) * 100) > $ALERTMANAGER_CPU_THRESHOLD
     for: 0m
     labels:
       severity: warning
     annotations:
       summary: Host high CPU load (instance {{ \$labels.instance }})
-      description: "CPU load is greater than $ALERTMANAGER_CPU_THRESHOLD%\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"  
+      description: \"CPU load is greater than $ALERTMANAGER_CPU_THRESHOLD%\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
   - alert: HostHighLoad1ForLongPeriod
     expr: avg_over_time(node_load1[120m]) > $ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN
     for: 0m
@@ -853,7 +853,7 @@ groups:
       severity: warning
     annotations:
       summary: Host high CPU load for a too long period (instance {{ \$labels.instance }})
-      description: "CPU load1 is greater than $ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN for the last 120 min\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: \"CPU load1 is greater than $ALERTMANAGER_CPU_LOAD1_THRESHOLD_FOR_120MIN for the last 120 min\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
   - alert: HostOutOfMemory
     expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < $ALERTMANAGER_RAM_THRESHOLD
     for: 2m
@@ -861,7 +861,7 @@ groups:
       severity: warning
     annotations:
       summary: Host out of memory (instance {{ \$labels.instance }})
-      description: "Node memory is filling up (lower than $ALERTMANAGER_RAM_THRESHOLD% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: \"Node memory is filling up (lower than $ALERTMANAGER_RAM_THRESHOLD% left)\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
   - alert: HostOutOfDiskSpace
     expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 20 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
     for: 2m
@@ -869,7 +869,7 @@ groups:
       severity: warning
     annotations:
       summary: Host out of disk space (instance {{ \$labels.instance }})
-      description: "Disk is almost full (lower than 20% left)\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: \"Disk is almost full (lower than 20% left)\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
   - alert: HostNodeOvertemperatureAlarm
     expr: node_hwmon_temp_celsius > $ALERTMANAGER_TEMPERATURE_THRESHOLD
     for: 0m
@@ -877,10 +877,32 @@ groups:
       severity: critical
     annotations:
       summary: Host node overtemperature alarm (instance {{ \$labels.instance }})
-      description: "Physical node temperature alarm triggered\n  VALUE = {{ \$value }}\n  LABELS = {{ \$labels }}"
+      description: \"Physical node temperature alarm triggered\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
+"
 
+  if [ "${FALCO_METRICS_ENABLED:-false}" = "true" ]; then
+    ALERT_RULES="${ALERT_RULES}
+  - alert: FalcoCriticalEvent
+    expr: increase(falco_events_total{priority=\"CRITICAL\"}[5m]) > 0
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: Falco critical security event on {{ \$labels.instance }}
+      description: \"Falco detected a CRITICAL event (rule={{ \$labels.rule }} container={{ \$labels.container_name }}). Possible malware/cryptominer.\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
+  - alert: FalcoWarningEvent
+    expr: increase(falco_events_total{priority=\"WARNING\"}[10m]) > 2
+    for: 0m
+    labels:
+      severity: warning
+    annotations:
+      summary: Falco warning security event on {{ \$labels.instance }}
+      description: \"Falco detected multiple WARNING events (rule={{ \$labels.rule }}). Review for suspicious activity.\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
+"
+  fi
 
-EOM
+  printf '%s\n' "$ALERT_RULES" > /etc/prometheus/alert.rules.yml
+  chown prometheus:prometheus /etc/prometheus/alert.rules.yml >/dev/null
 }
 
 
@@ -1143,8 +1165,7 @@ function download_prometheus() {
 function config_prometheus() {
   if [ $LOG_LEVEL -gt 3 ]; then printf "[DEBUG] Config prometheus\n"; fi
 
-  cat > /etc/prometheus/prometheus.yml <<EOM
-global:
+  local PROMETHEUS_CONFIG="global:
   scrape_interval:     15s
   evaluation_interval: 15s
 
@@ -1169,7 +1190,7 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:${NODE_EXPORTER_PORT}']
 
-  - job_name: "http_probe"
+  - job_name: \"http_probe\"
     metrics_path: /probe
     params:
       module: [http_2xx]
@@ -1181,10 +1202,23 @@ scrape_configs:
     - source_labels: [__param_target]
       target_label: instance
     - target_label: __address__
-      replacement: 127.0.0.1:${BLACKBOX_EXPORTER_PORT}
-EOM
+      replacement: 127.0.0.1:${BLACKBOX_EXPORTER_PORT}"
 
-  chown prometheus:prometheus /etc/prometheus/prometheus.yml &> /dev/null
+  if [ "${FALCO_METRICS_ENABLED:-false}" = "true" ]; then
+    PROMETHEUS_CONFIG="${PROMETHEUS_CONFIG}
+
+  - job_name: \"falco\"
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['localhost:8765']
+        labels:
+          service: falco
+          source: runtime-security"
+  fi
+
+  printf '%s\n' "$PROMETHEUS_CONFIG" > /etc/prometheus/prometheus.yml
+  chown prometheus:prometheus /etc/prometheus/prometheus.yml >/dev/null
 }
 
 

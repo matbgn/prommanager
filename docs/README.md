@@ -51,6 +51,7 @@ PromManager does not claim to allow all possible configurations with prometheus'
   - *Telegram*
   - *SMS*
   - *And many more thanks to [PingMe CLI](https://pingme.lmno.pk/#/?id=supported-services) Integration*
+- *Connect to [Falco](https://falco.org/) runtime security metrics (optional)*
 
 ## Installation
 Create target directory
@@ -185,6 +186,10 @@ ALERTMANAGER_TEMPERATURE_THRESHOLD=77
 ALERTMANAGER_CPU_THRESHOLD=80
 # [OPTIONAL] Set another bottom RAM threshold alarm [%]
 ALERTMANAGER_RAM_THRESHOLD=15
+
+# [OPTIONAL] Enable Falco runtime security metrics scraping
+# Set to true only on hosts where Falco is installed (e.g. Docker hosts)
+FALCO_METRICS_ENABLED=false
 ```
 
 ### Tweaking alert rules
