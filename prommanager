@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prommanager v5.5.0 !"
+MOTD="Welcome to Prommanager v5.5.1 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -883,7 +883,7 @@ function config_alert_rules() {
   if [ "${FALCO_METRICS_ENABLED:-false}" = "true" ]; then
     ALERT_RULES="${ALERT_RULES}
   - alert: FalcoCriticalEvent
-    expr: increase(falco_events_total{priority=\"CRITICAL\"}[5m]) > 0
+    expr: increase(falcosecurity_falcosidekick_falco_events_total{priority=~\"5|6|7|8\"}[5m]) > 0
     for: 0m
     labels:
       severity: critical
@@ -891,7 +891,7 @@ function config_alert_rules() {
       summary: Falco critical security event on {{ \$labels.instance }}
       description: \"Falco detected a CRITICAL event (rule={{ \$labels.rule }} container={{ \$labels.container_name }}). Possible malware/cryptominer.\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
   - alert: FalcoWarningEvent
-    expr: increase(falco_events_total{priority=\"WARNING\"}[10m]) > 2
+    expr: increase(falcosecurity_falcosidekick_falco_events_total{priority=~\"4\"}[10m]) > 0
     for: 0m
     labels:
       severity: warning
@@ -1211,9 +1211,9 @@ scrape_configs:
     metrics_path: /metrics
     scrape_interval: 15s
     static_configs:
-      - targets: ['localhost:8765']
+      - targets: ['localhost:2801']
         labels:
-          service: falco
+          service: falcosidekick
           source: runtime-security"
   fi
 

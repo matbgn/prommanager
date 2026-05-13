@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [5.5.1] - 2026-05-14
+### Fix
+- Fix Falco metrics prometheus ingestion
+
 ## [5.5.0] - 2026-05-13
 ### Add
 - Add optional Falco metrics support
