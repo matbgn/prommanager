@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prommanager v5.4.0 !"
+MOTD="Welcome to Prommanager v5.5.0 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
