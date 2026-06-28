@@ -1,5 +1,5 @@
 #!/bin/bash
-MOTD="Welcome to Prommanager v5.5.1 !"
+MOTD="Welcome to Prommanager v5.5.2 !"
 
 # Set default values
 SYSTEM_ARCH=amd64 # -> can be changed by script argument --arch arm64
@@ -872,7 +872,7 @@ function config_alert_rules() {
       description: \"Disk is almost full (lower than 20% left)\\n  VALUE = {{ \$value }}\\n  LABELS = {{ \$labels }}\"
   - alert: HostNodeOvertemperatureAlarm
     expr: node_hwmon_temp_celsius > $ALERTMANAGER_TEMPERATURE_THRESHOLD
-    for: 0m
+    for: 5m
     labels:
       severity: critical
     annotations:

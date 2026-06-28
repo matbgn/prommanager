@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [5.5.2] - 2026-06-28
+### Fix
+- Hold temperature alert firing for 5m before triggering to avoid false positives
+
 ## [5.5.1] - 2026-05-14
 ### Fix
 - Fix Falco metrics prometheus ingestion
